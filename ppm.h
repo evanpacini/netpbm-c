@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "pgm.h"
 
 // Pixel struct
 typedef struct {
@@ -226,6 +227,49 @@ PPMImage *ppm_pixel_convert(PPMImage *image, void (*conversionFn)(Pixel *)) {
         conversionFn(&newImage->data[i]);
 
     return newImage;
+}
+
+/**
+ * Convert an image to a new image using the given pixel conversion function.
+ *
+ * @param image     Pointer to the original image
+ * @param luminance Reference to the luminance function
+ * @return          Pointer to the new image
+ */
+PGMImage *ppm_to_pgm(const PPMImage *image, double (*luminance)(const Pixel *)) {
+    /* Allocate memory for PGM image */
+    PGMImage *pgm_image = (PGMImage *) malloc(sizeof(PGMImage));
+    if (!pgm_image) {
+        fprintf(stderr, "Error: could not allocate memory for PGM image\n");
+        return NULL;
+    }
+
+    // Copy image header to PGM image
+    memcpy(pgm_image, image, sizeof(PPMImage));
+
+    // Allocate memory for image data
+    pgm_image->data = (uint8_t *) malloc(pgm_image->width * pgm_image->height * sizeof(uint8_t) + pgm_image->height);
+    if (!pgm_image->data) {
+        fprintf(stderr, "Error: could not allocate memory for PGM image data\n");
+        free(pgm_image);
+        return NULL;
+    }
+
+    // Convert pixel data from PPM image to PGM image
+    for (uint32_t i = 0; i < pgm_image->height; i++) {
+        for (uint32_t j = 0; j < pgm_image->width; j++) {
+            // Get pixel from PPM image
+            Pixel p = image->data[i * image->width + j];
+
+            // Calculate linear_luminance of pixel
+            uint8_t y = (uint8_t) luminance(&p);
+
+            // Set linear_luminance value in PGM image
+            pgm_image->data[i * pgm_image->width + j] = y;
+        }
+    }
+
+    return pgm_image;
 }
 
 #endif //NETPBM_PPM_H
