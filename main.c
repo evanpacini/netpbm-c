@@ -22,6 +22,11 @@ int main(void) {
     write_pbm("../output/binary_random.pbm", pgmToPbmRandom);
     free_pbm(pgmToPbmRandom);
 
+    // Floyd-Steinberg dithering
+    PBMImage *pgmToPbmFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgm);
+    write_pbm("../output/binary_floyd.pbm", pgmToPbmFloyd);
+    free_pbm(pgmToPbmFloyd);
+
     free_pgm(ppmToPgm);
 
     PPMImage *linear = ppm_pixel_convert(readPpm, linearRGB);
@@ -42,6 +47,11 @@ int main(void) {
     write_pbm("../output/binary_srgb_random.pbm", pgmToPbmSrgbRandom);
     free_pbm(pgmToPbmSrgbRandom);
 
+    // Floyd-Steinberg dithering
+    PBMImage *pgmToPbmSrgbFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgmSrgb);
+    write_pbm("../output/binary_srgb_floyd.pbm", pgmToPbmSrgbFloyd);
+    free_pbm(pgmToPbmSrgbFloyd);
+
     free_pgm(ppmToPgmSrgb);
 
     PGMImage *ppmToPgmLinear = ppm_to_pgm(linear, linear_luminance);
@@ -57,6 +67,11 @@ int main(void) {
     PBMImage *pgmToPbmLinearRandom = pgm_to_pbm(ppmToPgmLinear, random_threshold);
     write_pbm("../output/binary_linear_random.pbm", pgmToPbmLinearRandom);
     free_pbm(pgmToPbmLinearRandom);
+
+    // Floyd-Steinberg dithering
+    PBMImage *pgmToPbmLinearFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgmLinear);
+    write_pbm("../output/binary_linear_floyd.pbm", pgmToPbmLinearFloyd);
+    free_pbm(pgmToPbmLinearFloyd);
 
     free_pgm(ppmToPgmLinear);
 

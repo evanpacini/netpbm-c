@@ -9,6 +9,7 @@
 #include "pbm.h"
 
 #define PGM_MAX_GRAY 255
+#define PGM_MAX_GRAY_F 255.0
 
 // PGM image format
 typedef struct {
@@ -140,6 +141,58 @@ PBMImage *pgm_to_pbm(const PGMImage *image, ThresholdFn threshold) {
         pbm_image->data[i] = pixel < threshold();
     }
 
+    return pbm_image;
+}
+
+/**
+ * Convert a PGM image to a PBM image using Floyd–Steinberg dithering.
+ *
+ * @param image     The PGM image to convert.
+ * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ */
+PBMImage *pgm_to_pbm_floyd_steinberg(const PGMImage *image) {
+    // Allocate memory for new image data
+    PBMImage *pbm_image = allocate_pbm(image->width, image->height);
+
+    // Normalize pixel data to [0, 1] double values
+    double *double_data = (double *) malloc(image->width * image->height * sizeof(double));
+    for (uint32_t y = 0; y < image->height; y++) {
+        for (uint32_t x = 0; x < image->width; x++) {
+            uint32_t pos = y * image->width + x;
+            double_data[pos] = (double) image->data[pos] / PGM_MAX_GRAY_F;
+        }
+    }
+
+    // Convert pixel data using Floyd-Steinberg dithering
+    for (uint32_t y = 0; y < image->height; y++) {
+        for (uint32_t x = 0; x < image->width; x++) {
+            uint32_t pos = y * image->width + x;
+            double oldPixel = double_data[pos];
+            double newPixel = round(oldPixel);
+
+            // Invert pixel value (PBM is white 0 and black 1)
+            pbm_image->data[pos] = newPixel == 0;
+
+            // Calculate error
+            double error = oldPixel - newPixel;
+
+            // Propagate error
+            if (x < image->width - 1) {
+                double_data[pos + 1] += error * 7 / 16;
+            }
+            if (y < image->height - 1) {
+                if (x > 0) {
+                    double_data[pos + image->width - 1] += error * 3 / 16;
+                }
+                double_data[pos + image->width] += error * 5 / 16;
+                if (x < image->width - 1) {
+                    double_data[pos + image->width + 1] += error * 1 / 16;
+                }
+            }
+        }
+    }
+
+    free(double_data);
     return pbm_image;
 }
 
