@@ -1,7 +1,3 @@
-//
-// Created by evan on 08/04/23.
-//
-
 #ifndef NETPBM_PBM_H
 #define NETPBM_PBM_H
 
@@ -18,6 +14,31 @@ typedef struct {
     uint32_t height;
     uint8_t *data;
 } PBMImage;
+
+/**
+ * Allocate memory for a PBM image.
+ *
+ * @param width     The width of the image.
+ * @param height    The height of the image.
+ * @return          A pointer to the PBMImage, or NULL if an error occurred.
+ */
+PBMImage *allocate_pbm(uint32_t width, uint32_t height) {
+    // Allocate memory for image data
+    PBMImage *image = (PBMImage *) malloc(sizeof(PBMImage));
+    if (!image) {
+        fprintf(stderr, "Error: out of memory\n");
+        return NULL;
+    }
+    image->width = width;
+    image->height = height;
+    image->data = (uint8_t *) malloc(width * height * sizeof(uint8_t));
+    if (!image->data) {
+        fprintf(stderr, "Error: out of memory\n");
+        free(image);
+        return NULL;
+    }
+    return image;
+}
 
 /**
  * Read a PBM image from a file.
@@ -68,21 +89,7 @@ PBMImage *read_pbm(const char *filename) {
     }
 
     // Allocate memory for image data
-    PBMImage *image = (PBMImage *) malloc(sizeof(PBMImage));
-    if (!image) {
-        fprintf(stderr, "Error: out of memory\n");
-        fclose(fp);
-        return NULL;
-    }
-    image->width = width;
-    image->height = height;
-    image->data = (uint8_t *) malloc(width * height * sizeof(uint8_t));
-    if (!image->data) {
-        fprintf(stderr, "Error: out of memory\n");
-        free(image);
-        fclose(fp);
-        return NULL;
-    }
+    PBMImage *image = allocate_pbm(width, height);
 
     // Decode the pixel data from the buffer
     for (size_t i = 0; i < width * height; i += 8) {
@@ -129,7 +136,7 @@ bool write_pbm(const char *filename, const PBMImage *image) {
 
     // Allocate buffer for encoded pixel data
     size_t buffer_size = (image->width * image->height + 7) / 8;
-    uint8_t *buffer = (uint8_t *) malloc(buffer_size);
+    uint8_t *buffer = (uint8_t *) calloc(1, buffer_size);
     if (!buffer) {
         fprintf(stderr, "Error: out of memory\n");
         fclose(fp);
