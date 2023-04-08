@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "pbm.h"
 
 // PGM image format
 typedef struct {
@@ -116,6 +117,38 @@ bool write_pgm(const char *filename, const PGMImage *image) {
     fclose(fp);
     return true;
 }
+
+/**
+ * Convert a PGM image to a PBM image.
+ *
+ * @param image     The PGM image to convert.
+ * @param threshold The threshold value to use for the conversion.
+ * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ */
+PBMImage *pgm_to_pbm(const PGMImage *image, uint8_t threshold) {
+    // Allocate memory for new image data
+    PBMImage *pbm_image = (PBMImage *) malloc(sizeof(PBMImage));
+    if (!pbm_image) {
+        fprintf(stderr, "Error: out of memory\n");
+        return NULL;
+    }
+    pbm_image->width = image->width;
+    pbm_image->height = image->height;
+    pbm_image->data = (uint8_t *) malloc(image->width * image->height * sizeof(uint8_t));
+    if (!pbm_image->data) {
+        fprintf(stderr, "Error: out of memory\n");
+        free(pbm_image);
+        return NULL;
+    }
+
+    // Convert pixel data
+    for (uint32_t i = 0; i < image->width * image->height; i++) {
+        pbm_image->data[i] = image->data[i] >= threshold;
+    }
+
+    return pbm_image;
+}
+
 
 /**
  * Free memory used by a PGM image
