@@ -27,6 +27,16 @@ int main(void) {
     write_pbm("../output/binary_floyd.pbm", pgmToPbmFloyd);
     free_pbm(pgmToPbmFloyd);
 
+    // Atkinson dithering
+    PBMImage *pgmToPbmAtkinson = pgm_to_pbm_atkinson(ppmToPgm);
+    write_pbm("../output/binary_atkinson.pbm", pgmToPbmAtkinson);
+    free_pbm(pgmToPbmAtkinson);
+
+    // Jarvis-Judice-Ninke dithering
+    PBMImage *pgmToPbmJarvis = pgm_to_pbm_jarvis_judice_ninke(ppmToPgm);
+    write_pbm("../output/binary_jarvis.pbm", pgmToPbmJarvis);
+    free_pbm(pgmToPbmJarvis);
+
     free_pgm(ppmToPgm);
 
     PPMImage *linear = ppm_pixel_convert(readPpm, linearRGB);
@@ -52,6 +62,16 @@ int main(void) {
     write_pbm("../output/binary_srgb_floyd.pbm", pgmToPbmSrgbFloyd);
     free_pbm(pgmToPbmSrgbFloyd);
 
+    // Atkinson dithering
+    PBMImage *pgmToPbmSrgbAtkinson = pgm_to_pbm_atkinson(ppmToPgmSrgb);
+    write_pbm("../output/binary_srgb_atkinson.pbm", pgmToPbmSrgbAtkinson);
+    free_pbm(pgmToPbmSrgbAtkinson);
+
+    // Jarvis-Judice-Ninke dithering
+    PBMImage *pgmToPbmSrgbJarvis = pgm_to_pbm_jarvis_judice_ninke(ppmToPgmSrgb);
+    write_pbm("../output/binary_srgb_jarvis.pbm", pgmToPbmSrgbJarvis);
+    free_pbm(pgmToPbmSrgbJarvis);
+
     free_pgm(ppmToPgmSrgb);
 
     PGMImage *ppmToPgmLinear = ppm_to_pgm(linear, linear_luminance);
@@ -72,6 +92,16 @@ int main(void) {
     PBMImage *pgmToPbmLinearFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgmLinear);
     write_pbm("../output/binary_linear_floyd.pbm", pgmToPbmLinearFloyd);
     free_pbm(pgmToPbmLinearFloyd);
+
+    // Atkinson dithering
+    PBMImage *pgmToPbmLinearAtkinson = pgm_to_pbm_atkinson(ppmToPgmLinear);
+    write_pbm("../output/binary_linear_atkinson.pbm", pgmToPbmLinearAtkinson);
+    free_pbm(pgmToPbmLinearAtkinson);
+
+    // Jarvis-Judice-Ninke dithering
+    PBMImage *pgmToPbmLinearJarvis = pgm_to_pbm_jarvis_judice_ninke(ppmToPgmLinear);
+    write_pbm("../output/binary_linear_jarvis.pbm", pgmToPbmLinearJarvis);
+    free_pbm(pgmToPbmLinearJarvis);
 
     free_pgm(ppmToPgmLinear);
 
