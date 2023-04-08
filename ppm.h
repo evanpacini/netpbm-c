@@ -29,14 +29,14 @@ typedef struct {
  * @return          A pointer to the image data, or NULL if an error occurred.
  */
 PPMImage *read_ppm(const char *filename) {
-    /* Open file for reading */
+    // Open file for reading
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
         fprintf(stderr, "Error: could not open file '%s'\n", filename);
         return NULL;
     }
 
-    /* Read header (magic number, width, height, and max color value) */
+    // Read header (magic number, width, height, and max color value)
     char magic[3];
     uint32_t width;
     uint32_t height;
@@ -49,21 +49,21 @@ PPMImage *read_ppm(const char *filename) {
         return NULL;
     }
 
-    /* Make sure the magic number is "P6" (binary PPM format) */
+    // Make sure the magic number is "P6" (binary PPM format)
     if (magic[0] != 'P' || magic[1] != '6') {
         fprintf(stderr, "Error: unsupported file format in file '%s'\n", filename);
         fclose(fp);
         return NULL;
     }
 
-    /* Make sure the max color value is 255 */
+    // Make sure the max color value is 255
     if (max_color != 255) {
         fprintf(stderr, "Error: max color value must be 255\n");
         fclose(fp);
         return NULL;
     }
 
-    /* Allocate memory for image data */
+    // Allocate memory for image data
     PPMImage *image = (PPMImage *) malloc(sizeof(PPMImage));
     if (!image) {
         fprintf(stderr, "Error: out of memory\n");
@@ -82,7 +82,7 @@ PPMImage *read_ppm(const char *filename) {
     }
 
 
-    /* Read pixel data */
+    // Read pixel data
     if (fread(image->data, sizeof(Pixel), width * height, fp) != width * height) {
         fprintf(stderr, "Error: could not read pixel data from file '%s'\n", filename);
         free(image->data);
@@ -103,21 +103,21 @@ PPMImage *read_ppm(const char *filename) {
  * @return          true if the image was written successfully, false otherwise.
  */
 bool write_ppm(const char *filename, const PPMImage *image) {
-    /* Open file for writing */
+    // Open file for writing
     FILE *fp = fopen(filename, "wb");
     if (!fp) {
         fprintf(stderr, "Error: could not open file '%s' for writing\n", filename);
         return false;
     }
 
-    /* Write magic number, width, height, and max color value */
+    // Write magic number, width, height, and max color value
     if (fprintf(fp, "P6\n%u\n%u\n%hu\n", image->width, image->height, image->max_color) < 0) {
         fprintf(stderr, "Error: could not write header to file '%s'\n", filename);
         fclose(fp);
         return false;
     }
 
-    /* Write pixel data */
+    // Write pixel data
     if (fwrite(image->data, sizeof(uint8_t), image->width * image->height * 3, fp) !=
         image->width * image->height * 3) {
         fprintf(stderr, "Error: could not write pixel data to file '%s'\n", filename);
@@ -222,9 +222,8 @@ PPMImage *ppm_pixel_convert(PPMImage *image, void (*conversionFn)(Pixel *)) {
     memcpy(newImage->data, image->data, sizeof(Pixel) * newImage->width * newImage->height);
 
     // Convert the pixel data of the new image using the given conversion function
-    for (int i = 0; i < newImage->width * newImage->height; i++) {
+    for (int i = 0; i < newImage->width * newImage->height; i++)
         conversionFn(&newImage->data[i]);
-    }
 
     return newImage;
 }
