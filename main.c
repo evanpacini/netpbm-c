@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <string.h>
 #include "ppm.h"
 #include "pgm.h"
 #include "pbm.h"
@@ -13,10 +11,18 @@ int main(void) {
 
     PGMImage *ppmToPgm = ppm_to_pgm(readPpm, sRGB_luminance);
     write_pgm("../output/grayscale.pgm", ppmToPgm);
-    PBMImage *pgmToPbm = pgm_to_pbm(ppmToPgm, 128);
+
+    // No dithering
+    PBMImage *pgmToPbm = pgm_to_pbm(ppmToPgm, middle_threshold);
     write_pbm("../output/binary.pbm", pgmToPbm);
-    free_pgm(ppmToPgm);
     free_pbm(pgmToPbm);
+
+    // Random dithering
+    PBMImage *pgmToPbmRandom = pgm_to_pbm(ppmToPgm, random_threshold);
+    write_pbm("../output/binary_random.pbm", pgmToPbmRandom);
+    free_pbm(pgmToPbmRandom);
+
+    free_pgm(ppmToPgm);
 
     PPMImage *linear = ppm_pixel_convert(readPpm, linearRGB);
     write_ppm("../output/linear.ppm", linear);
@@ -25,18 +31,34 @@ int main(void) {
     PGMImage *ppmToPgmSrgb = ppm_to_pgm(srgb, sRGB_luminance);
     write_pgm("../output/grayscale_srgb.pgm", ppmToPgmSrgb);
     free_ppm(srgb);
-    PBMImage *pgmToPbmSrgb = pgm_to_pbm(ppmToPgmSrgb, 128);
+
+    // No dithering
+    PBMImage *pgmToPbmSrgb = pgm_to_pbm(ppmToPgmSrgb, middle_threshold);
     write_pbm("../output/binary_srgb.pbm", pgmToPbmSrgb);
-    free_pgm(ppmToPgmSrgb);
     free_pbm(pgmToPbmSrgb);
+
+    // Random dithering
+    PBMImage *pgmToPbmSrgbRandom = pgm_to_pbm(ppmToPgmSrgb, random_threshold);
+    write_pbm("../output/binary_srgb_random.pbm", pgmToPbmSrgbRandom);
+    free_pbm(pgmToPbmSrgbRandom);
+
+    free_pgm(ppmToPgmSrgb);
 
     PGMImage *ppmToPgmLinear = ppm_to_pgm(linear, linear_luminance);
     write_pgm("../output/grayscale_linear.pgm", ppmToPgmLinear);
     free_ppm(linear);
-    PBMImage *pgmToPbmLinear = pgm_to_pbm(ppmToPgmLinear, 128);
+
+    // No dithering
+    PBMImage *pgmToPbmLinear = pgm_to_pbm(ppmToPgmLinear, middle_threshold);
     write_pbm("../output/binary_linear.pbm", pgmToPbmLinear);
-    free_pgm(ppmToPgmLinear);
     free_pbm(pgmToPbmLinear);
+
+    // Random dithering
+    PBMImage *pgmToPbmLinearRandom = pgm_to_pbm(ppmToPgmLinear, random_threshold);
+    write_pbm("../output/binary_linear_random.pbm", pgmToPbmLinearRandom);
+    free_pbm(pgmToPbmLinearRandom);
+
+    free_pgm(ppmToPgmLinear);
 
     return 0;
 }

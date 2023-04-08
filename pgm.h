@@ -5,7 +5,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/random.h>
 #include "pbm.h"
+
+#define PGM_MAX_GRAY 255
 
 // PGM image format
 typedef struct {
@@ -14,6 +17,36 @@ typedef struct {
     uint16_t max_gray;
     uint8_t *data;
 } PGMImage;
+
+// Threshold function
+typedef uint8_t (*ThresholdFn)();
+
+/**
+ * Allocate memory for a PGM image.
+ *
+ * @param width     The width of the image.
+ * @param height    The height of the image.
+ * @return          A pointer to the PGMImage, or NULL if an error occurred.
+ */
+PGMImage *allocate_pgm(uint32_t width, uint32_t height) {
+    // Allocate memory for image data
+    PGMImage *image = (PGMImage *) calloc(1, sizeof(PGMImage));
+    if (!image) {
+        fprintf(stderr, "Error: out of memory\n");
+        return NULL;
+    }
+    image->width = width;
+    image->height = height;
+    image->max_gray = PGM_MAX_GRAY;
+    image->data = (uint8_t *) calloc(1, width * height * sizeof(uint8_t));
+    if (!image->data) {
+        fprintf(stderr, "Error: out of memory\n");
+        free(image);
+        return NULL;
+    }
+
+    return image;
+}
 
 /**
  * Read a PGM image from a file.
@@ -47,30 +80,15 @@ PGMImage *read_pgm(const char *filename) {
         return NULL;
     }
 
-    // Make sure the max gray value is 255
-    if (max_gray != 255) {
-        fprintf(stderr, "Error: max gray value must be 255\n");
+    // Make sure the max gray value is PGM_MAX_GRAY
+    if (max_gray != PGM_MAX_GRAY) {
+        fprintf(stderr, "Error: max gray value must be PGM_MAX_GRAY\n");
         fclose(fp);
         return NULL;
     }
 
     // Allocate memory for image data
-    PGMImage *image = (PGMImage *) malloc(sizeof(PGMImage));
-    if (!image) {
-        fprintf(stderr, "Error: out of memory\n");
-        fclose(fp);
-        return NULL;
-    }
-    image->width = width;
-    image->height = height;
-    image->max_gray = max_gray;
-    image->data = (uint8_t *) malloc(width * height * sizeof(uint8_t));
-    if (!image->data) {
-        fprintf(stderr, "Error: out of memory\n");
-        free(image);
-        fclose(fp);
-        return NULL;
-    }
+    PGMImage *image = allocate_pgm(width, height);
 
     // Read pixel data
     if (fread(image->data, sizeof(uint8_t), width * height, fp) != width * height) {
@@ -83,6 +101,46 @@ PGMImage *read_pgm(const char *filename) {
 
     fclose(fp);
     return image;
+}
+
+/**
+ * Threshold function that always returns 128.
+ *
+ * @return 128
+ */
+uint8_t middle_threshold() {
+    return 128;
+}
+
+/**
+ * Threshold function that returns a random value between 0 and 255.
+ *
+ * @return Random value between 0 and 255
+ */
+uint8_t random_threshold() {
+    uint8_t random;
+    getrandom(&random, sizeof(uint8_t), 0);
+    return random;
+}
+
+/**
+ * Convert a PGM image to a PBM image.
+ *
+ * @param image     The PGM image to convert.
+ * @param threshold The threshold value to use for the conversion.
+ * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ */
+PBMImage *pgm_to_pbm(const PGMImage *image, ThresholdFn threshold) {
+    // Allocate memory for new image data
+    PBMImage *pbm_image = allocate_pbm(image->width, image->height);
+
+    // Convert pixel data
+    for (uint32_t i = 0; i < image->width * image->height; i++) {
+        uint8_t pixel = image->data[i];
+        pbm_image->data[i] = pixel < threshold();
+    }
+
+    return pbm_image;
 }
 
 /**
@@ -119,39 +177,7 @@ bool write_pgm(const char *filename, const PGMImage *image) {
 }
 
 /**
- * Convert a PGM image to a PBM image.
- *
- * @param image     The PGM image to convert.
- * @param threshold The threshold value to use for the conversion.
- * @return          A pointer to the new PBM image, or NULL if an error occurred.
- */
-PBMImage *pgm_to_pbm(const PGMImage *image, uint8_t threshold) {
-    // Allocate memory for new image data
-    PBMImage *pbm_image = (PBMImage *) malloc(sizeof(PBMImage));
-    if (!pbm_image) {
-        fprintf(stderr, "Error: out of memory\n");
-        return NULL;
-    }
-    pbm_image->width = image->width;
-    pbm_image->height = image->height;
-    pbm_image->data = (uint8_t *) malloc(image->width * image->height * sizeof(uint8_t));
-    if (!pbm_image->data) {
-        fprintf(stderr, "Error: out of memory\n");
-        free(pbm_image);
-        return NULL;
-    }
-
-    // Convert pixel data
-    for (uint32_t i = 0; i < image->width * image->height; i++) {
-        pbm_image->data[i] = image->data[i] >= threshold;
-    }
-
-    return pbm_image;
-}
-
-
-/**
- * Free memory used by a PGM image
+ * Free memory used by a PGM image.
  *
  * @param image     Image to free
  */
