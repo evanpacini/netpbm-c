@@ -125,6 +125,20 @@ uint8_t RandomThreshold() {
 }
 
 /**
+ * Normalizes pixel values from 0-255 to double 0-1.
+ *
+ * @param image Input PgmImage
+ * @return Normalized image data
+ */
+double *NormalizePgm(const PgmImage *image) {
+  double *double_data = (double *)malloc(image->width_ * image->height_ * sizeof(double));
+#pragma omp parallel for default(none) shared(image, double_data)
+  for (uint32_t i = 0; i < image->height_ * image->width_; i++)
+	double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
+  return double_data;
+}
+
+/**
  * Convert a PGM image to a PBM image.
  *
  * @param image     The PGM image to convert.
@@ -156,10 +170,7 @@ PbmImage *PgmToPbmFloydSteinberg(const PgmImage *image) {
   PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
   // Normalize pixel data to [0, 1] double values
-  double *double_data = (double *)malloc(pbm_image->width_ * pbm_image->height_ * sizeof(double));
-#pragma omp parallel for default(none) shared(image, double_data)
-  for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-	double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
+  double *double_data = NormalizePgm(image);
 
   // Convert pixel data using Floyd-Steinberg dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
@@ -205,10 +216,7 @@ PbmImage *PgmToPbmAtkinson(const PgmImage *image) {
   PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
   // Normalize pixel data to [0, 1] double values
-  double *double_data = (double *)malloc(pbm_image->width_ * pbm_image->height_ * sizeof(double));
-#pragma omp parallel for default(none) shared(image, double_data)
-  for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-	double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
+  double *double_data = NormalizePgm(image);
 
   // Convert pixel data using Atkinson dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
@@ -266,10 +274,7 @@ PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image) {
   PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
   // Normalize pixel data to [0, 1] double values
-  double *double_data = (double *)malloc(image->width_ * image->height_ * sizeof(double));
-#pragma omp parallel for default(none) shared(image, double_data)
-  for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-	double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
+  double *double_data = NormalizePgm(image);
 
   // Convert pixel data using Jarvis, Judice, and Ninke dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
