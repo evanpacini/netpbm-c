@@ -144,6 +144,7 @@ bool write_pbm(const char *filename, const PBMImage *image) {
     }
 
     // Encode pixel data
+#pragma omp parallel for default(none) shared(image, buffer)
     for (size_t i = 0; i < image->width * image->height; i++) {
         buffer[i / 8] |= (image->data[i] << (7 - i % 8));
     }

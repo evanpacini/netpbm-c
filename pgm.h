@@ -136,7 +136,8 @@ PBMImage *pgm_to_pbm(const PGMImage *image, ThresholdFn threshold) {
     PBMImage *pbm_image = allocate_pbm(image->width, image->height);
 
     // Convert pixel data
-    for (uint32_t i = 0; i < image->width * image->height; i++) {
+#pragma omp parallel for default(none) shared(image, pbm_image, threshold)
+    for (uint32_t i = 0; i < pbm_image->width * pbm_image->height; i++) {
         uint8_t pixel = image->data[i];
         pbm_image->data[i] = pixel < threshold();
     }
@@ -155,18 +156,15 @@ PBMImage *pgm_to_pbm_floyd_steinberg(const PGMImage *image) {
     PBMImage *pbm_image = allocate_pbm(image->width, image->height);
 
     // Normalize pixel data to [0, 1] double values
-    double *double_data = (double *) malloc(image->width * image->height * sizeof(double));
-    for (uint32_t y = 0; y < image->height; y++) {
-        for (uint32_t x = 0; x < image->width; x++) {
-            uint32_t pos = y * image->width + x;
-            double_data[pos] = (double) image->data[pos] / PGM_MAX_GRAY_F;
-        }
-    }
+    double *double_data = (double *) malloc(pbm_image->width * pbm_image->height * sizeof(double));
+#pragma omp parallel for default(none) shared(image, double_data)
+    for (uint32_t i = 0; i < image->height * image->width; i++)
+        double_data[i] = (double) image->data[i] / PGM_MAX_GRAY_F;
 
     // Convert pixel data using Floyd-Steinberg dithering
-    for (uint32_t y = 0; y < image->height; y++) {
-        for (uint32_t x = 0; x < image->width; x++) {
-            uint32_t pos = y * image->width + x;
+    for (uint32_t y = 0; y < pbm_image->height; y++) {
+        for (uint32_t x = 0; x < pbm_image->width; x++) {
+            uint32_t pos = y * pbm_image->width + x;
             double oldPixel = double_data[pos];
             double newPixel = round(oldPixel);
 
@@ -177,16 +175,16 @@ PBMImage *pgm_to_pbm_floyd_steinberg(const PGMImage *image) {
             double error = oldPixel - newPixel;
 
             // Propagate error
-            if (x < image->width - 1) {
+            if (x < pbm_image->width - 1) {
                 double_data[pos + 1] += error * 7 / 16;
             }
-            if (y < image->height - 1) {
+            if (y < pbm_image->height - 1) {
                 if (x > 0) {
-                    double_data[pos + image->width - 1] += error * 3 / 16;
+                    double_data[pos + pbm_image->width - 1] += error * 3 / 16;
                 }
-                double_data[pos + image->width] += error * 5 / 16;
-                if (x < image->width - 1) {
-                    double_data[pos + image->width + 1] += error * 1 / 16;
+                double_data[pos + pbm_image->width] += error * 5 / 16;
+                if (x < pbm_image->width - 1) {
+                    double_data[pos + pbm_image->width + 1] += error * 1 / 16;
                 }
             }
         }
@@ -207,18 +205,15 @@ PBMImage *pgm_to_pbm_atkinson(const PGMImage *image) {
     PBMImage *pbm_image = allocate_pbm(image->width, image->height);
 
     // Normalize pixel data to [0, 1] double values
-    double *double_data = (double *) malloc(image->width * image->height * sizeof(double));
-    for (uint32_t y = 0; y < image->height; y++) {
-        for (uint32_t x = 0; x < image->width; x++) {
-            uint32_t pos = y * image->width + x;
-            double_data[pos] = (double) image->data[pos] / PGM_MAX_GRAY_F;
-        }
-    }
+    double *double_data = (double *) malloc(pbm_image->width * pbm_image->height * sizeof(double));
+#pragma omp parallel for default(none) shared(image, double_data)
+    for (uint32_t i = 0; i < image->height * image->width; i++)
+        double_data[i] = (double) image->data[i] / PGM_MAX_GRAY_F;
 
     // Convert pixel data using Atkinson dithering
-    for (uint32_t y = 0; y < image->height; y++) {
-        for (uint32_t x = 0; x < image->width; x++) {
-            uint32_t pos = y * image->width + x;
+    for (uint32_t y = 0; y < pbm_image->height; y++) {
+        for (uint32_t x = 0; x < pbm_image->width; x++) {
+            uint32_t pos = y * pbm_image->width + x;
             double oldPixel = double_data[pos];
             double newPixel = round(oldPixel);
 
@@ -229,28 +224,28 @@ PBMImage *pgm_to_pbm_atkinson(const PGMImage *image) {
             double error = oldPixel - newPixel;
 
             // Propagate error
-            if (x < image->width - 1) {
+            if (x < pbm_image->width - 1) {
                 double_data[pos + 1] += error * 1 / 8;
             }
-            if (y < image->height - 1) {
+            if (y < pbm_image->height - 1) {
                 if (x > 0) {
-                    double_data[pos + image->width - 1] += error * 1 / 8;
+                    double_data[pos + pbm_image->width - 1] += error * 1 / 8;
                 }
-                double_data[pos + image->width] += error * 1 / 8;
-                if (x < image->width - 1) {
-                    double_data[pos + image->width + 1] += error * 1 / 8;
+                double_data[pos + pbm_image->width] += error * 1 / 8;
+                if (x < pbm_image->width - 1) {
+                    double_data[pos + pbm_image->width + 1] += error * 1 / 8;
                 }
-                if (x < image->width - 2) {
-                    double_data[pos + image->width + 2] += error * 1 / 8;
+                if (x < pbm_image->width - 2) {
+                    double_data[pos + pbm_image->width + 2] += error * 1 / 8;
                 }
             }
-            if (y < image->height - 2) {
+            if (y < pbm_image->height - 2) {
                 if (x > 0) {
-                    double_data[pos + 2 * image->width - 1] += error * 1 / 8;
+                    double_data[pos + 2 * pbm_image->width - 1] += error * 1 / 8;
                 }
-                double_data[pos + 2 * image->width] += error * 1 / 8;
-                if (x < image->width - 1) {
-                    double_data[pos + 2 * image->width + 1] += error * 1 / 8;
+                double_data[pos + 2 * pbm_image->width] += error * 1 / 8;
+                if (x < pbm_image->width - 1) {
+                    double_data[pos + 2 * pbm_image->width + 1] += error * 1 / 8;
                 }
             }
         }
@@ -272,17 +267,14 @@ PBMImage *pgm_to_pbm_jarvis_judice_ninke(const PGMImage *image) {
 
     // Normalize pixel data to [0, 1] double values
     double *double_data = (double *) malloc(image->width * image->height * sizeof(double));
-    for (uint32_t y = 0; y < image->height; y++) {
-        for (uint32_t x = 0; x < image->width; x++) {
-            uint32_t pos = y * image->width + x;
-            double_data[pos] = (double) image->data[pos] / PGM_MAX_GRAY_F;
-        }
-    }
+#pragma omp parallel for default(none) shared(image, double_data)
+    for (uint32_t i = 0; i < image->height * image->width; i++)
+        double_data[i] = (double) image->data[i] / PGM_MAX_GRAY_F;
 
     // Convert pixel data using Jarvis, Judice, and Ninke dithering
-    for (uint32_t y = 0; y < image->height; y++) {
-        for (uint32_t x = 0; x < image->width; x++) {
-            uint32_t pos = y * image->width + x;
+    for (uint32_t y = 0; y < pbm_image->height; y++) {
+        for (uint32_t x = 0; x < pbm_image->width; x++) {
+            uint32_t pos = y * pbm_image->width + x;
             double oldPixel = double_data[pos];
             double newPixel = round(oldPixel);
 
@@ -293,34 +285,34 @@ PBMImage *pgm_to_pbm_jarvis_judice_ninke(const PGMImage *image) {
             double error = oldPixel - newPixel;
 
             // Propagate error
-            if (x < image->width - 1) {
+            if (x < pbm_image->width - 1) {
                 double_data[pos + 1] += error * 7 / 48;
             }
-            if (x < image->width - 2) {
+            if (x < pbm_image->width - 2) {
                 double_data[pos + 2] += error * 5 / 48;
             }
-            if (y < image->height - 1) {
+            if (y < pbm_image->height - 1) {
                 if (x > 0) {
-                    double_data[pos + image->width - 1] += error * 3 / 48;
+                    double_data[pos + pbm_image->width - 1] += error * 3 / 48;
                 }
-                double_data[pos + image->width] += error * 5 / 48;
-                if (x < image->width - 1) {
-                    double_data[pos + image->width + 1] += error * 7 / 48;
+                double_data[pos + pbm_image->width] += error * 5 / 48;
+                if (x < pbm_image->width - 1) {
+                    double_data[pos + pbm_image->width + 1] += error * 7 / 48;
                 }
-                if (x < image->width - 2) {
-                    double_data[pos + image->width + 2] += error * 5 / 48;
+                if (x < pbm_image->width - 2) {
+                    double_data[pos + pbm_image->width + 2] += error * 5 / 48;
                 }
             }
-            if (y < image->height - 2) {
+            if (y < pbm_image->height - 2) {
                 if (x > 0) {
-                    double_data[pos + 2 * image->width - 1] += error * 1 / 48;
+                    double_data[pos + 2 * pbm_image->width - 1] += error * 1 / 48;
                 }
-                double_data[pos + 2 * image->width] += error * 3 / 48;
-                if (x < image->width - 1) {
-                    double_data[pos + 2 * image->width + 1] += error * 5 / 48;
+                double_data[pos + 2 * pbm_image->width] += error * 3 / 48;
+                if (x < pbm_image->width - 1) {
+                    double_data[pos + 2 * pbm_image->width + 1] += error * 5 / 48;
                 }
-                if (x < image->width - 2) {
-                    double_data[pos + 2 * image->width + 2] += error * 3 / 48;
+                if (x < pbm_image->width - 2) {
+                    double_data[pos + 2 * pbm_image->width + 2] += error * 3 / 48;
                 }
             }
         }

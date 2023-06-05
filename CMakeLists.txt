@@ -12,3 +12,9 @@ add_executable(Netpbm ${SOURCE_FILES})
 
 # Include the math library
 target_link_libraries(Netpbm m)
+
+# Include the OpenMP library
+find_package(OpenMP)
+if (OpenMP_C_FOUND)
+    target_link_libraries(Netpbm OpenMP::OpenMP_C)
+endif ()

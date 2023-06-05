@@ -171,6 +171,7 @@ PPMImage *ppm_pixel_convert(PPMImage *image, void (*conversionFn)(Pixel *)) {
     memcpy(newImage->data, image->data, sizeof(Pixel) * newImage->width * newImage->height);
 
     // Convert the pixel data of the new image using the given conversion function
+#pragma omp parallel for default(none) shared(newImage, conversionFn)
     for (int i = 0; i < newImage->width * newImage->height; i++)
         conversionFn(&newImage->data[i]);
 
@@ -213,17 +214,16 @@ PGMImage *ppm_to_pgm(const PPMImage *image, double (*luminance)(const Pixel *)) 
     }
 
     // Convert pixel data from PPM image to PGM image
-    for (uint32_t i = 0; i < pgm_image->height; i++) {
-        for (uint32_t j = 0; j < pgm_image->width; j++) {
-            // Get pixel from PPM image
-            Pixel p = image->data[i * image->width + j];
+#pragma omp parallel for default(none) shared(pgm_image, image, luminance)
+    for (uint32_t i = 0; i < pgm_image->height * pgm_image->width; i++) {
+        // Get pixel from PPM image
+        Pixel p = image->data[i];
 
-            // Calculate linear_luminance of pixel
-            uint8_t y = (uint8_t) luminance(&p);
+        // Calculate linear_luminance of pixel
+        uint8_t y = (uint8_t) luminance(&p);
 
-            // Set linear_luminance value in PGM image
-            pgm_image->data[i * pgm_image->width + j] = y;
-        }
+        // Set linear_luminance value in PGM image
+        pgm_image->data[i] = y;
     }
 
     return pgm_image;

@@ -1,8 +1,12 @@
+#include <omp.h>
 #include "ppm.h"
 #include "pgm.h"
 #include "pbm.h"
 
 int main(void) {
+    // Set number of threads
+    omp_set_num_threads(64);
+
     PPMImage *readPpm = read_ppm("../input/tud2.ppm");
     write_ppm("../output/normal.ppm", readPpm);
 
