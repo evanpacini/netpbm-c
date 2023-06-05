@@ -3,7 +3,6 @@
 #include "pbm.h"
 
 int main(void) {
-
   PpmImage *read_ppm = ReadPpm("../input/tud2.ppm");
   WritePpm("../output/normal.ppm", read_ppm);
 
