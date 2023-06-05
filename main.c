@@ -37,6 +37,11 @@ int main(void) {
   WritePbm("../output/binary_jarvis.pbm", pgm_to_pbm_jarvis);
   FreePbm(pgm_to_pbm_jarvis);
 
+  // Bayer dithering
+  PbmImage *pgm_to_pbm_bayer = PgmToPbmBayer(ppm_to_pgm);
+  WritePbm("../output/binary_bayer.pbm", pgm_to_pbm_bayer);
+  FreePbm(pgm_to_pbm_bayer);
+
   FreePgm(ppm_to_pgm);
 
   PpmImage *linear = PpmPixelConvert(read_ppm, LinearRgb);
@@ -72,6 +77,11 @@ int main(void) {
   WritePbm("../output/binary_srgb_jarvis.pbm", pgm_to_pbm_srgb_jarvis);
   FreePbm(pgm_to_pbm_srgb_jarvis);
 
+  // Bayer dithering
+  PbmImage *pgm_to_pbm_srgb_bayer = PgmToPbmBayer(ppm_to_pgm_srgb);
+  WritePbm("../output/binary_srgb_bayer.pbm", pgm_to_pbm_srgb_bayer);
+  FreePbm(pgm_to_pbm_srgb_bayer);
+
   FreePgm(ppm_to_pgm_srgb);
 
   PgmImage *ppm_to_pgm_linear = PpmToPgm(linear, LinearLuminance);
@@ -102,6 +112,11 @@ int main(void) {
   PbmImage *pgm_to_pbm_linear_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm_linear);
   WritePbm("../output/binary_linear_jarvis.pbm", pgm_to_pbm_linear_jarvis);
   FreePbm(pgm_to_pbm_linear_jarvis);
+
+  // Bayer dithering
+  PbmImage *pgm_to_pbm_linear_bayer = PgmToPbmBayer(ppm_to_pgm_linear);
+  WritePbm("../output/binary_linear_bayer.pbm", pgm_to_pbm_linear_bayer);
+  FreePbm(pgm_to_pbm_linear_bayer);
 
   FreePgm(ppm_to_pgm_linear);
 

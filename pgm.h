@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/random.h>
+#include "bayer.h"
 #include "pbm.h"
 
 #define PGM_MAX_GRAY 255
@@ -142,7 +143,7 @@ double *NormalizePgm(const PgmImage *image) {
  * Convert a PGM image to a PBM image.
  *
  * @param image     The PGM image to convert.
- * @param threshold The threshold value to use for the conversion.
+ * @param threshold The threshold function (0-255) to use for the conversion.
  * @return          A pointer to the new PBM image, or NULL if an error occurred.
  */
 PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
@@ -151,10 +152,8 @@ PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
 
   // Convert pixel data
 #pragma omp parallel for default(none) shared(image, pbm_image, threshold)
-  for (uint32_t i = 0; i < pbm_image->width_ * pbm_image->height_; i++) {
-	uint8_t pixel = image->data_[i];
-	pbm_image->data_[i] = pixel < threshold();
-  }
+  for (uint32_t i = 0; i < pbm_image->width_ * pbm_image->height_; i++)
+	pbm_image->data_[i] = image->data_[i] < threshold();
 
   return pbm_image;
 }
@@ -324,6 +323,25 @@ PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image) {
   }
 
   free(double_data);
+  return pbm_image;
+}
+
+PbmImage *PgmToPbmBayer(const PgmImage *image) {
+  // Allocate memory for new image data
+  PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
+
+  // Normalize pixel data to [0, 1] double values
+  double *double_data = NormalizePgm(image);
+
+  // Convert using Bayer (Ordered) Dithering
+#pragma omp parallel for default(none) shared(kBayer8X8, pbm_image, double_data) collapse(2)
+  for (uint32_t y = 0; y < pbm_image->height_; y++) {
+	for (uint32_t x = 0; x < pbm_image->width_; x++) {
+	  uint32_t pos = y * pbm_image->width_ + x;
+	  pbm_image->data_[pos] = double_data[pos] < kBayer8X8[x & 7][y & 7];
+	}
+  }
+
   return pbm_image;
 }
 
