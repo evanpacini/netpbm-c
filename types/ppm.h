@@ -6,10 +6,10 @@
 
 // PPM image format
 typedef struct {
-  uint32_t width_;
-  uint32_t height_;
-  uint16_t max_color_;
-  Pixel *data_;
+    uint32_t width_;
+    uint32_t height_;
+    uint16_t max_color_;
+    Pixel *data_;
 } PpmImage;
 
 #endif //NETPBM_TYPES_PPM_H_

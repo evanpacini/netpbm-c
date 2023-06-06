@@ -6,9 +6,9 @@
 // PBM image format
 // We use one byte per bit, so we can easily access individual pixels
 typedef struct {
-  uint32_t width_;
-  uint32_t height_;
-  uint8_t *data_;
+    uint32_t width_;
+    uint32_t height_;
+    uint8_t *data_;
 } PbmImage;
 
 // Threshold function

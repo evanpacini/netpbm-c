@@ -6,10 +6,10 @@
 
 // PGM image format
 typedef struct {
-  uint32_t width_;
-  uint32_t height_;
-  uint16_t max_gray_;
-  uint8_t *data_;
+    uint32_t width_;
+    uint32_t height_;
+    uint16_t max_gray_;
+    uint8_t *data_;
 } PgmImage;
 
 // Luminance function
