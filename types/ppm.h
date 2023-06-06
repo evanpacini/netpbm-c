@@ -4,8 +4,9 @@
 #define PPM_MAX_COLOR 255
 #define PPM_MAX_COLOR_F 255.0
 
-#include "pixel.h"
 #include <stdint.h>
+
+#include "pixel.h"
 
 // PPM image format
 typedef struct {
@@ -15,4 +16,4 @@ typedef struct {
   Pixel *data_;
 } PpmImage;
 
-#endif // NETPBM_TYPES_PPM_H_
+#endif// NETPBM_TYPES_PPM_H_
