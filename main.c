@@ -21,7 +21,18 @@ int main(void) {
   // Random dithering
   PbmImage *pgm_to_pbm_random = PgmToPbm(ppm_to_pgm, RandomThreshold);
   WritePbm("../output/binary_random.pbm", pgm_to_pbm_random);
+
+  // Convert random to PGM
+  PgmImage *pbm_to_pgm_random = PbmToPgm(pgm_to_pbm_random);
   FreePbm(pgm_to_pbm_random);
+  WritePgm("../output/random.pgm", pbm_to_pgm_random);
+
+  // Apply blur
+  PgmImage *pbm_to_pgm_random_blur = KasperBlur(pbm_to_pgm_random, 5);
+  WritePgm("../output/random_blur.pgm", pbm_to_pgm_random_blur);
+  FreePgm(pbm_to_pgm_random_blur);
+
+  FreePgm(pbm_to_pgm_random);
 
   // Floyd-Steinberg dithering
   PbmImage *pgm_to_pbm_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm);
@@ -36,7 +47,17 @@ int main(void) {
   // Jarvis-Judice-Ninke dithering
   PbmImage *pgm_to_pbm_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm);
   WritePbm("../output/binary_jarvis.pbm", pgm_to_pbm_jarvis);
-  FreePbm(pgm_to_pbm_jarvis);
+
+  // Convert Jarvis-Judice-Ninke to PGM
+  PgmImage *pbm_to_pgm_jarvis = PbmToPgm(pgm_to_pbm_jarvis);
+  WritePgm("../output/jarvis.pgm", pbm_to_pgm_jarvis);
+
+  // Apply blur
+  PgmImage *pbm_to_pgm_jarvis_blur = KasperBlur(pbm_to_pgm_jarvis, 5);
+  WritePgm("../output/jarvis_blur.pgm", pbm_to_pgm_jarvis_blur);
+  FreePgm(pbm_to_pgm_jarvis_blur);
+
+  FreePgm(pbm_to_pgm_jarvis);
 
   // Bayer dithering
   PbmImage *pgm_to_pbm_bayer = PgmToPbmBayer(ppm_to_pgm);

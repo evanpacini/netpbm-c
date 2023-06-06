@@ -18,7 +18,7 @@
  */
 PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PgmImage *image = (PgmImage *)calloc(1, sizeof(PgmImage));
+  PgmImage *image = (PgmImage *) calloc(1, sizeof(PgmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
@@ -26,7 +26,7 @@ PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   image->width_ = width;
   image->height_ = height;
   image->max_gray_ = PGM_MAX_GRAY;
-  image->data_ = (uint8_t *)calloc(1, width * height * sizeof(uint8_t));
+  image->data_ = (uint8_t *) calloc(1, width * height * sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -116,13 +116,36 @@ PgmImage *PpmToPgm(const PpmImage *image, LuminanceFn luminance) {
     Pixel p = image->data_[i];
 
     // Calculate luminance of pixel
-    uint8_t y = (uint8_t)luminance(&p);
+    uint8_t y = (uint8_t) luminance(&p);
 
     // Set luminance value in PGM image
     pgm_image->data_[i] = y;
   }
 
   return pgm_image;
+}
+
+/**
+ * Convert a PBM image to a PGM image.
+ *
+ * @param image     Pointer to the image data
+ * @return          Pointer to the new image data
+ */
+PgmImage *PbmToPgm(const PbmImage *image) {
+  // Allocate memory for image data
+  PgmImage *pgm = AllocatePgm(image->width_, image->height_);
+  if (!pgm) {
+    return NULL;
+  }
+
+  // Convert pixel data
+#pragma omp parallel for default(none) shared(pgm, image)
+  for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
+    // Set pixel value in PGM image
+    pgm->data_[i] = image->data_[i] ? 0 : PGM_MAX_GRAY;
+  }
+
+  return pgm;
 }
 
 /**
@@ -153,7 +176,7 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
           }
         }
       }
-      new_image->data_[y * image->width_ + x] = (uint8_t)(sum / count);
+      new_image->data_[y * image->width_ + x] = (uint8_t) (sum / count);
     }
   }
 

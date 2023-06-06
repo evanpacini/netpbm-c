@@ -362,16 +362,6 @@ PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image) {
   return pbm_image;
 }
 
-PbmImage *PbmToPgm(const PgmImage *image) {
-  // Allocate memory for image data
-  PbmImage *pbm = AllocatePbm(image->width_, image->height_);
-  if (!pbm) {
-    return NULL;
-  }
-
-  // TODO: Convert PBM image to PGM image
-}
-
 /**
  * Write a PBM image to a file.
  *
