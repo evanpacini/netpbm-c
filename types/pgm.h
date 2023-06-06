@@ -4,8 +4,9 @@
 #define PGM_MAX_GRAY 255
 #define PGM_MAX_GRAY_F 255.0
 
-#include "pixel.h"
 #include <stdint.h>
+
+#include "pixel.h"
 
 // PGM image format
 typedef struct {
@@ -18,4 +19,4 @@ typedef struct {
 // Luminance function
 typedef double (*LuminanceFn)(const Pixel *);
 
-#endif // NETPBM_TYPES_PGM_H_
+#endif// NETPBM_TYPES_PGM_H_

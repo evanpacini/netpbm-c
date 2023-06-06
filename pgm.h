@@ -1,13 +1,14 @@
 #ifndef NETPBM__PGM_H_
 #define NETPBM__PGM_H_
 
-#include "types/pbm.h"
-#include "types/pgm.h"
-#include "types/ppm.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "types/pbm.h"
+#include "types/pgm.h"
+#include "types/ppm.h"
 
 /**
  * Allocate memory for a PGM image.
@@ -18,15 +19,15 @@
  */
 PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PgmImage *image = (PgmImage *) calloc(1, sizeof(PgmImage));
+  PgmImage *image = (PgmImage *)calloc(1, sizeof(PgmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
   }
-  image->width_ = width;
-  image->height_ = height;
+  image->width_    = width;
+  image->height_   = height;
   image->max_gray_ = PGM_MAX_GRAY;
-  image->data_ = (uint8_t *) calloc(1, width * height * sizeof(uint8_t));
+  image->data_     = (uint8_t *)calloc(1, width * height * sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -116,7 +117,7 @@ PgmImage *PpmToPgm(const PpmImage *image, LuminanceFn luminance) {
     Pixel p = image->data_[i];
 
     // Calculate luminance of pixel
-    uint8_t y = (uint8_t) luminance(&p);
+    uint8_t y = (uint8_t)luminance(&p);
 
     // Set luminance value in PGM image
     pgm_image->data_[i] = y;
@@ -161,11 +162,11 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
   PgmImage *new_image = AllocatePgm(image->width_, image->height_);
 
 // Blur pixel data
-#pragma omp parallel for default(none) shared(image, new_image, radius)        \
+#pragma omp parallel for default(none) shared(image, new_image, radius) \
     collapse(2)
   for (uint32_t y = 0; y < image->height_; y++) {
     for (uint32_t x = 0; x < image->width_; x++) {
-      uint64_t sum = 0;
+      uint64_t sum   = 0;
       uint16_t count = 0;
       for (int64_t ry = -radius; ry <= radius; ry++) {
         for (int64_t rx = -radius; rx <= radius; rx++) {
@@ -176,7 +177,7 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
           }
         }
       }
-      new_image->data_[y * image->width_ + x] = (uint8_t) (sum / count);
+      new_image->data_[y * image->width_ + x] = (uint8_t)(sum / count);
     }
   }
 
@@ -229,4 +230,4 @@ void FreePgm(PgmImage *image) {
   free(image);
 }
 
-#endif // NETPBM__PGM_H_
+#endif// NETPBM__PGM_H_
