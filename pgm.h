@@ -184,6 +184,28 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
 }
 
 /**
+ * Difference between two pgm images expressed as an image itself.
+ * Each pixel of the returned image is the absolute difference between the
+ * corresponding pixels of the input images.
+ *
+ * @param image1 First image
+ * @param image2 Second image
+ * @return Difference image
+ */
+PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
+  // Allocate memory for new image data
+  PgmImage *new_image = AllocatePgm(image1->width_, image1->height_);
+
+  // Calculate difference
+#pragma omp parallel for default(none) shared(image1, image2, new_image)
+  for (uint32_t i = 0; i < image1->height_ * image1->width_; i++) {
+    new_image->data_[i] = (uint8_t) abs(image1->data_[i] - image2->data_[i]);
+  }
+
+  return new_image;
+}
+
+/**
  * Write a PGM image to a file
  *
  * @param filename  Name of file to write to
