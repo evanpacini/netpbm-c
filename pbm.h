@@ -14,8 +14,8 @@
 
 #include <sys/random.h>
 
-ssize_t my_random(void *buf, size_t len) {
-  return getrandom((ssize_t)buf, len, 0);
+ssize_t MyRandom(void *buf, size_t len) {
+  return getrandom(buf, len, 0);
 }
 
 #else /* not linux */
@@ -24,7 +24,7 @@ ssize_t my_random(void *buf, size_t len) {
 #include <stdio.h>
 #include <stdlib.h>
 
-ssize_t my_random(void *buf, size_t len) {
+ssize_t MyRandom(void *buf, size_t len) {
   unsigned char *buffer = (unsigned char *)buf;
   size_t i;
 
@@ -166,7 +166,7 @@ uint8_t MiddleThreshold() { return 128; }
  */
 uint8_t RandomThreshold() {
   uint8_t random;
-  my_random(&random, sizeof(uint8_t));
+  MyRandom(&random, sizeof(uint8_t));
   return random;
 }
 
