@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 /**
  * Allocate memory for a PGM image.
@@ -203,6 +204,45 @@ PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
   }
 
   return new_image;
+}
+
+/**
+ * Sum the pixels of an image raised to some power p.
+ *
+ * @param image Image to sum
+ */
+double PgmSum(PgmImage *image, double p) {
+  double sum = 0;
+
+  // Sum pixels
+#pragma omp parallel for default(none) shared(image, p) reduction(+:sum)
+  for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
+    sum += pow((double) image->data_[i], p);
+  }
+
+  return sum;
+}
+
+/**
+ * Calculate the variance of the distribution of pixel values in an image.
+ *
+ * @param image Image to calculate variance of
+ * @return      Variance of pixel values
+ */
+double PgmVariance(PgmImage *image) {
+  // Calculate mean
+  double mean = (double) PgmSum(image, 1) / (image->width_ * image->height_);
+
+  // Calculate variance
+  double variance = 0;
+
+#pragma omp parallel for default(none) shared(image, mean) reduction(+:variance)
+  for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
+    variance += pow((double) image->data_[i] - mean, 2);
+  }
+  variance /= image->width_ * image->height_;
+
+  return variance;
 }
 
 /**
