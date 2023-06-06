@@ -1,109 +1,147 @@
-#include "ppm.h"
-#include "pgm.h"
 #include "pbm.h"
+#include "pgm.h"
+#include "ppm.h"
 
 int main(void) {
-    PPMImage *readPpm = read_ppm("../input/tud2.ppm");
-    write_ppm("../output/normal.ppm", readPpm);
+  // Read PPM image
+  PpmImage *read_ppm = ReadPpm("../input/tud2.ppm");
+  WritePpm("../output/normal.ppm", read_ppm);
 
-    PPMImage *srgb = ppm_pixel_convert(readPpm, sRGB);
-    write_ppm("../output/srgb.ppm", srgb);
+  PpmImage *srgb = PpmPixelConvert(read_ppm, SRgb);
+  WritePpm("../output/srgb.ppm", srgb);
 
-    PGMImage *ppmToPgm = ppm_to_pgm(readPpm, sRGB_luminance);
-    write_pgm("../output/grayscale.pgm", ppmToPgm);
+  PgmImage *ppm_to_pgm = PpmToPgm(read_ppm, SRgbLuminance);
+  WritePgm("../output/grayscale.pgm", ppm_to_pgm);
 
-    // No dithering
-    PBMImage *pgmToPbm = pgm_to_pbm(ppmToPgm, middle_threshold);
-    write_pbm("../output/binary.pbm", pgmToPbm);
-    free_pbm(pgmToPbm);
+  // No dithering
+  PbmImage *pgm_to_pbm = PgmToPbm(ppm_to_pgm, MiddleThreshold);
+  WritePbm("../output/binary.pbm", pgm_to_pbm);
+  FreePbm(pgm_to_pbm);
 
-    // Random dithering
-    PBMImage *pgmToPbmRandom = pgm_to_pbm(ppmToPgm, random_threshold);
-    write_pbm("../output/binary_random.pbm", pgmToPbmRandom);
-    free_pbm(pgmToPbmRandom);
+  // Random dithering
+  PbmImage *pgm_to_pbm_random = PgmToPbm(ppm_to_pgm, RandomThreshold);
+  WritePbm("../output/binary_random.pbm", pgm_to_pbm_random);
+  FreePbm(pgm_to_pbm_random);
 
-    // Floyd-Steinberg dithering
-    PBMImage *pgmToPbmFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgm);
-    write_pbm("../output/binary_floyd.pbm", pgmToPbmFloyd);
-    free_pbm(pgmToPbmFloyd);
+  // Floyd-Steinberg dithering
+  PbmImage *pgm_to_pbm_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm);
+  WritePbm("../output/binary_floyd.pbm", pgm_to_pbm_floyd);
+  FreePbm(pgm_to_pbm_floyd);
 
-    // Atkinson dithering
-    PBMImage *pgmToPbmAtkinson = pgm_to_pbm_atkinson(ppmToPgm);
-    write_pbm("../output/binary_atkinson.pbm", pgmToPbmAtkinson);
-    free_pbm(pgmToPbmAtkinson);
+  // Atkinson dithering
+  PbmImage *pgm_to_pbm_atkinson = PgmToPbmAtkinson(ppm_to_pgm);
+  WritePbm("../output/binary_atkinson.pbm", pgm_to_pbm_atkinson);
+  FreePbm(pgm_to_pbm_atkinson);
 
-    // Jarvis-Judice-Ninke dithering
-    PBMImage *pgmToPbmJarvis = pgm_to_pbm_jarvis_judice_ninke(ppmToPgm);
-    write_pbm("../output/binary_jarvis.pbm", pgmToPbmJarvis);
-    free_pbm(pgmToPbmJarvis);
+  // Jarvis-Judice-Ninke dithering
+  PbmImage *pgm_to_pbm_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm);
+  WritePbm("../output/binary_jarvis.pbm", pgm_to_pbm_jarvis);
+  FreePbm(pgm_to_pbm_jarvis);
 
-    free_pgm(ppmToPgm);
+  // Bayer dithering
+  PbmImage *pgm_to_pbm_bayer = PgmToPbmBayer(ppm_to_pgm);
+  WritePbm("../output/binary_bayer.pbm", pgm_to_pbm_bayer);
+  FreePbm(pgm_to_pbm_bayer);
 
-    PPMImage *linear = ppm_pixel_convert(readPpm, linearRGB);
-    write_ppm("../output/linear.ppm", linear);
-    free_ppm(readPpm);
+  // Kasper blur
+  PgmImage *pgm_to_pgm_kasper_blur = KasperBlur(ppm_to_pgm, 3);
+  WritePgm("../output/grayscale_kasper_blur.pgm", pgm_to_pgm_kasper_blur);
 
-    PGMImage *ppmToPgmSrgb = ppm_to_pgm(srgb, sRGB_luminance);
-    write_pgm("../output/grayscale_srgb.pgm", ppmToPgmSrgb);
-    free_ppm(srgb);
+  FreePgm(ppm_to_pgm);
 
-    // No dithering
-    PBMImage *pgmToPbmSrgb = pgm_to_pbm(ppmToPgmSrgb, middle_threshold);
-    write_pbm("../output/binary_srgb.pbm", pgmToPbmSrgb);
-    free_pbm(pgmToPbmSrgb);
+  // Kasper blur then Bayer dithering
+  PbmImage *pgm_to_pbm_kasper_blur_bayer =
+      PgmToPbmBayer(pgm_to_pgm_kasper_blur);
+  WritePbm("../output/binary_kasper_blur_bayer.pbm",
+           pgm_to_pbm_kasper_blur_bayer);
+  FreePbm(pgm_to_pbm_kasper_blur_bayer);
 
-    // Random dithering
-    PBMImage *pgmToPbmSrgbRandom = pgm_to_pbm(ppmToPgmSrgb, random_threshold);
-    write_pbm("../output/binary_srgb_random.pbm", pgmToPbmSrgbRandom);
-    free_pbm(pgmToPbmSrgbRandom);
+  // Kasper blur then Floyd-Steinberg dithering
+  PbmImage *pgm_to_pbm_kasper_blur_floyd =
+      PgmToPbmFloydSteinberg(pgm_to_pgm_kasper_blur);
+  WritePbm("../output/binary_kasper_blur_floyd.pbm",
+           pgm_to_pbm_kasper_blur_floyd);
+  FreePbm(pgm_to_pbm_kasper_blur_floyd);
 
-    // Floyd-Steinberg dithering
-    PBMImage *pgmToPbmSrgbFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgmSrgb);
-    write_pbm("../output/binary_srgb_floyd.pbm", pgmToPbmSrgbFloyd);
-    free_pbm(pgmToPbmSrgbFloyd);
+  FreePgm(pgm_to_pgm_kasper_blur);
 
-    // Atkinson dithering
-    PBMImage *pgmToPbmSrgbAtkinson = pgm_to_pbm_atkinson(ppmToPgmSrgb);
-    write_pbm("../output/binary_srgb_atkinson.pbm", pgmToPbmSrgbAtkinson);
-    free_pbm(pgmToPbmSrgbAtkinson);
+  PpmImage *linear = PpmPixelConvert(read_ppm, LinearRgb);
+  WritePpm("../output/linear.ppm", linear);
+  FreePpm(read_ppm);
 
-    // Jarvis-Judice-Ninke dithering
-    PBMImage *pgmToPbmSrgbJarvis = pgm_to_pbm_jarvis_judice_ninke(ppmToPgmSrgb);
-    write_pbm("../output/binary_srgb_jarvis.pbm", pgmToPbmSrgbJarvis);
-    free_pbm(pgmToPbmSrgbJarvis);
+  PgmImage *ppm_to_pgm_srgb = PpmToPgm(srgb, SRgbLuminance);
+  WritePgm("../output/grayscale_srgb.pgm", ppm_to_pgm_srgb);
+  FreePpm(srgb);
 
-    free_pgm(ppmToPgmSrgb);
+  // No dithering
+  PbmImage *pgm_to_pbm_srgb = PgmToPbm(ppm_to_pgm_srgb, MiddleThreshold);
+  WritePbm("../output/binary_srgb.pbm", pgm_to_pbm_srgb);
+  FreePbm(pgm_to_pbm_srgb);
 
-    PGMImage *ppmToPgmLinear = ppm_to_pgm(linear, linear_luminance);
-    write_pgm("../output/grayscale_linear.pgm", ppmToPgmLinear);
-    free_ppm(linear);
+  // Random dithering
+  PbmImage *pgm_to_pbm_srgb_random = PgmToPbm(ppm_to_pgm_srgb, RandomThreshold);
+  WritePbm("../output/binary_srgb_random.pbm", pgm_to_pbm_srgb_random);
+  FreePbm(pgm_to_pbm_srgb_random);
 
-    // No dithering
-    PBMImage *pgmToPbmLinear = pgm_to_pbm(ppmToPgmLinear, middle_threshold);
-    write_pbm("../output/binary_linear.pbm", pgmToPbmLinear);
-    free_pbm(pgmToPbmLinear);
+  // Floyd-Steinberg dithering
+  PbmImage *pgm_to_pbm_srgb_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm_srgb);
+  WritePbm("../output/binary_srgb_floyd.pbm", pgm_to_pbm_srgb_floyd);
+  FreePbm(pgm_to_pbm_srgb_floyd);
 
-    // Random dithering
-    PBMImage *pgmToPbmLinearRandom = pgm_to_pbm(ppmToPgmLinear, random_threshold);
-    write_pbm("../output/binary_linear_random.pbm", pgmToPbmLinearRandom);
-    free_pbm(pgmToPbmLinearRandom);
+  // Atkinson dithering
+  PbmImage *pgm_to_pbm_srgb_atkinson = PgmToPbmAtkinson(ppm_to_pgm_srgb);
+  WritePbm("../output/binary_srgb_atkinson.pbm", pgm_to_pbm_srgb_atkinson);
+  FreePbm(pgm_to_pbm_srgb_atkinson);
 
-    // Floyd-Steinberg dithering
-    PBMImage *pgmToPbmLinearFloyd = pgm_to_pbm_floyd_steinberg(ppmToPgmLinear);
-    write_pbm("../output/binary_linear_floyd.pbm", pgmToPbmLinearFloyd);
-    free_pbm(pgmToPbmLinearFloyd);
+  // Jarvis-Judice-Ninke dithering
+  PbmImage *pgm_to_pbm_srgb_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm_srgb);
+  WritePbm("../output/binary_srgb_jarvis.pbm", pgm_to_pbm_srgb_jarvis);
+  FreePbm(pgm_to_pbm_srgb_jarvis);
 
-    // Atkinson dithering
-    PBMImage *pgmToPbmLinearAtkinson = pgm_to_pbm_atkinson(ppmToPgmLinear);
-    write_pbm("../output/binary_linear_atkinson.pbm", pgmToPbmLinearAtkinson);
-    free_pbm(pgmToPbmLinearAtkinson);
+  // Bayer dithering
+  PbmImage *pgm_to_pbm_srgb_bayer = PgmToPbmBayer(ppm_to_pgm_srgb);
+  WritePbm("../output/binary_srgb_bayer.pbm", pgm_to_pbm_srgb_bayer);
+  FreePbm(pgm_to_pbm_srgb_bayer);
 
-    // Jarvis-Judice-Ninke dithering
-    PBMImage *pgmToPbmLinearJarvis = pgm_to_pbm_jarvis_judice_ninke(ppmToPgmLinear);
-    write_pbm("../output/binary_linear_jarvis.pbm", pgmToPbmLinearJarvis);
-    free_pbm(pgmToPbmLinearJarvis);
+  FreePgm(ppm_to_pgm_srgb);
 
-    free_pgm(ppmToPgmLinear);
+  PgmImage *ppm_to_pgm_linear = PpmToPgm(linear, LinearLuminance);
+  WritePgm("../output/grayscale_linear.pgm", ppm_to_pgm_linear);
+  FreePpm(linear);
 
-    return 0;
+  // No dithering
+  PbmImage *pgm_to_pbm_linear = PgmToPbm(ppm_to_pgm_linear, MiddleThreshold);
+  WritePbm("../output/binary_linear.pbm", pgm_to_pbm_linear);
+  FreePbm(pgm_to_pbm_linear);
+
+  // Random dithering
+  PbmImage *pgm_to_pbm_linear_random =
+      PgmToPbm(ppm_to_pgm_linear, RandomThreshold);
+  WritePbm("../output/binary_linear_random.pbm", pgm_to_pbm_linear_random);
+  FreePbm(pgm_to_pbm_linear_random);
+
+  // Floyd-Steinberg dithering
+  PbmImage *pgm_to_pbm_linear_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm_linear);
+  WritePbm("../output/binary_linear_floyd.pbm", pgm_to_pbm_linear_floyd);
+  FreePbm(pgm_to_pbm_linear_floyd);
+
+  // Atkinson dithering
+  PbmImage *pgm_to_pbm_linear_atkinson = PgmToPbmAtkinson(ppm_to_pgm_linear);
+  WritePbm("../output/binary_linear_atkinson.pbm", pgm_to_pbm_linear_atkinson);
+  FreePbm(pgm_to_pbm_linear_atkinson);
+
+  // Jarvis-Judice-Ninke dithering
+  PbmImage *pgm_to_pbm_linear_jarvis =
+      PgmToPbmJarvisJudiceNinke(ppm_to_pgm_linear);
+  WritePbm("../output/binary_linear_jarvis.pbm", pgm_to_pbm_linear_jarvis);
+  FreePbm(pgm_to_pbm_linear_jarvis);
+
+  // Bayer dithering
+  PbmImage *pgm_to_pbm_linear_bayer = PgmToPbmBayer(ppm_to_pgm_linear);
+  WritePbm("../output/binary_linear_bayer.pbm", pgm_to_pbm_linear_bayer);
+  FreePbm(pgm_to_pbm_linear_bayer);
+
+  FreePgm(ppm_to_pgm_linear);
+
+  return 0;
 }
