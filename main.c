@@ -42,7 +42,23 @@ int main(void) {
   WritePbm("../output/binary_bayer.pbm", pgm_to_pbm_bayer);
   FreePbm(pgm_to_pbm_bayer);
 
+  // Kasper blur
+  PgmImage *pgm_to_pgm_kasper_blur = KasperBlur(ppm_to_pgm, 3);
+  WritePgm("../output/grayscale_kasper_blur.pgm", pgm_to_pgm_kasper_blur);
+
   FreePgm(ppm_to_pgm);
+
+  // Kasper blur then Bayer dithering
+  PbmImage *pgm_to_pbm_kasper_blur_bayer = PgmToPbmBayer(pgm_to_pgm_kasper_blur);
+  WritePbm("../output/binary_kasper_blur_bayer.pbm", pgm_to_pbm_kasper_blur_bayer);
+  FreePbm(pgm_to_pbm_kasper_blur_bayer);
+
+  // Kasper blur then Floyd-Steinberg dithering
+  PbmImage *pgm_to_pbm_kasper_blur_floyd = PgmToPbmFloydSteinberg(pgm_to_pgm_kasper_blur);
+  WritePbm("../output/binary_kasper_blur_floyd.pbm", pgm_to_pbm_kasper_blur_floyd);
+  FreePbm(pgm_to_pbm_kasper_blur_floyd);
+
+  FreePgm(pgm_to_pgm_kasper_blur);
 
   PpmImage *linear = PpmPixelConvert(read_ppm, LinearRgb);
   WritePpm("../output/linear.ppm", linear);
