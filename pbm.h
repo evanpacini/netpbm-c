@@ -9,7 +9,31 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#if defined __GLIBC__ && defined __linux__
+
 #include <sys/random.h>
+
+ssize_t MyRandom(void *buf, size_t len) { return getrandom(buf, len, 0); }
+
+#else /* not linux */
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+ssize_t MyRandom(void *buf, size_t len) {
+  unsigned char *buffer = (unsigned char *)buf;
+  size_t i;
+
+  for (i = 0; i < len; ++i) {
+    buffer[i] = (unsigned char)rand();
+  }
+
+  return (ssize_t)len;
+}
+
+#endif
 
 /**
  * Allocate memory for a PBM image.
@@ -20,14 +44,14 @@
  */
 PbmImage *AllocatePbm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PbmImage *image = (PbmImage *) malloc(sizeof(PbmImage));
+  PbmImage *image = (PbmImage *)malloc(sizeof(PbmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
   }
   image->width_ = width;
   image->height_ = height;
-  image->data_ = (uint8_t *) malloc(width * height * sizeof(uint8_t));
+  image->data_ = (uint8_t *)malloc(width * height * sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -69,8 +93,8 @@ PbmImage *ReadPbm(const char *filename) {
   }
 
   // Allocate memory for buffer
-  size_t buffer_size = (size_t) ((width * height + 7) / 8);
-  uint8_t *buffer = (uint8_t *) malloc(buffer_size);
+  size_t buffer_size = (size_t)((width * height + 7) / 8);
+  uint8_t *buffer = (uint8_t *)malloc(buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
@@ -119,10 +143,10 @@ PbmImage *ReadPbm(const char *filename) {
  */
 double *NormalizePgm(const PgmImage *image) {
   double *double_data =
-      (double *) malloc(image->width_ * image->height_ * sizeof(double));
+      (double *)malloc(image->width_ * image->height_ * sizeof(double));
 #pragma omp parallel for default(none) shared(image, double_data)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-    double_data[i] = (double) image->data_[i] / PGM_MAX_GRAY_F;
+    double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
   return double_data;
 }
 
@@ -140,7 +164,7 @@ uint8_t MiddleThreshold() { return 128; }
  */
 uint8_t RandomThreshold() {
   uint8_t random;
-  getrandom(&random, sizeof(uint8_t), 0);
+  MyRandom(&random, sizeof(uint8_t));
   return random;
 }
 
@@ -386,7 +410,7 @@ bool WritePbm(const char *filename, const PbmImage *image) {
 
   // Allocate buffer for encoded pixel data
   size_t buffer_size = (image->width_ * image->height_ + 7) / 8;
-  uint8_t *buffer = (uint8_t *) calloc(1, buffer_size);
+  uint8_t *buffer = (uint8_t *)calloc(1, buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
