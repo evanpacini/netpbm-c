@@ -14,4 +14,4 @@ typedef struct {
 // Threshold function
 typedef uint8_t (*ThresholdFn)();
 
-#endif //NETPBM_TYPES_PBM_H_
+#endif // NETPBM_TYPES_PBM_H_

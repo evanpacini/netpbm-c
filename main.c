@@ -1,6 +1,6 @@
-#include "ppm.h"
-#include "pgm.h"
 #include "pbm.h"
+#include "pgm.h"
+#include "ppm.h"
 
 int main(void) {
   // Read PPM image
@@ -50,13 +50,17 @@ int main(void) {
   FreePgm(ppm_to_pgm);
 
   // Kasper blur then Bayer dithering
-  PbmImage *pgm_to_pbm_kasper_blur_bayer = PgmToPbmBayer(pgm_to_pgm_kasper_blur);
-  WritePbm("../output/binary_kasper_blur_bayer.pbm", pgm_to_pbm_kasper_blur_bayer);
+  PbmImage *pgm_to_pbm_kasper_blur_bayer =
+      PgmToPbmBayer(pgm_to_pgm_kasper_blur);
+  WritePbm("../output/binary_kasper_blur_bayer.pbm",
+           pgm_to_pbm_kasper_blur_bayer);
   FreePbm(pgm_to_pbm_kasper_blur_bayer);
 
   // Kasper blur then Floyd-Steinberg dithering
-  PbmImage *pgm_to_pbm_kasper_blur_floyd = PgmToPbmFloydSteinberg(pgm_to_pgm_kasper_blur);
-  WritePbm("../output/binary_kasper_blur_floyd.pbm", pgm_to_pbm_kasper_blur_floyd);
+  PbmImage *pgm_to_pbm_kasper_blur_floyd =
+      PgmToPbmFloydSteinberg(pgm_to_pgm_kasper_blur);
+  WritePbm("../output/binary_kasper_blur_floyd.pbm",
+           pgm_to_pbm_kasper_blur_floyd);
   FreePbm(pgm_to_pbm_kasper_blur_floyd);
 
   FreePgm(pgm_to_pgm_kasper_blur);
@@ -111,7 +115,8 @@ int main(void) {
   FreePbm(pgm_to_pbm_linear);
 
   // Random dithering
-  PbmImage *pgm_to_pbm_linear_random = PgmToPbm(ppm_to_pgm_linear, RandomThreshold);
+  PbmImage *pgm_to_pbm_linear_random =
+      PgmToPbm(ppm_to_pgm_linear, RandomThreshold);
   WritePbm("../output/binary_linear_random.pbm", pgm_to_pbm_linear_random);
   FreePbm(pgm_to_pbm_linear_random);
 
@@ -126,7 +131,8 @@ int main(void) {
   FreePbm(pgm_to_pbm_linear_atkinson);
 
   // Jarvis-Judice-Ninke dithering
-  PbmImage *pgm_to_pbm_linear_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm_linear);
+  PbmImage *pgm_to_pbm_linear_jarvis =
+      PgmToPbmJarvisJudiceNinke(ppm_to_pgm_linear);
   WritePbm("../output/binary_linear_jarvis.pbm", pgm_to_pbm_linear_jarvis);
   FreePbm(pgm_to_pbm_linear_jarvis);
 

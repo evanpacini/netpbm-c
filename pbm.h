@@ -1,13 +1,13 @@
 #ifndef NETPBM__PBM_H_
 #define NETPBM__PBM_H_
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include "types/pbm.h"
 #include "types/pgm.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * Allocate memory for a PBM image.
@@ -18,14 +18,14 @@
  */
 PbmImage *AllocatePbm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PbmImage *image = (PbmImage *) malloc(sizeof(PbmImage));
+  PbmImage *image = (PbmImage *)malloc(sizeof(PbmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
   }
   image->width_ = width;
   image->height_ = height;
-  image->data_ = (uint8_t *) malloc(width * height * sizeof(uint8_t));
+  image->data_ = (uint8_t *)malloc(width * height * sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -52,7 +52,8 @@ PbmImage *ReadPbm(const char *filename) {
   char magic[3];
   uint32_t width;
   uint32_t height;
-  if (fscanf(fp, "%2s%*[ \t\r\n]%u%*[ \t\r\n]%u%*1[ \t\r\n]", magic, &width, &height) != 3) {
+  if (fscanf(fp, "%2s%*[ \t\r\n]%u%*[ \t\r\n]%u%*1[ \t\r\n]", magic, &width,
+             &height) != 3) {
     fprintf(stderr, "Error: invalid header in file '%s'\n", filename);
     fclose(fp);
     return NULL;
@@ -66,8 +67,8 @@ PbmImage *ReadPbm(const char *filename) {
   }
 
   // Allocate memory for buffer
-  size_t buffer_size = (size_t) ((width * height + 7) / 8);
-  uint8_t *buffer = (uint8_t *) malloc(buffer_size);
+  size_t buffer_size = (size_t)((width * height + 7) / 8);
+  uint8_t *buffer = (uint8_t *)malloc(buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
@@ -76,7 +77,8 @@ PbmImage *ReadPbm(const char *filename) {
 
   // Read pixel data into buffer
   if (fread(buffer, sizeof(uint8_t), buffer_size, fp) != buffer_size) {
-    fprintf(stderr, "Error: failed to read pixel data from file '%s'\n", filename);
+    fprintf(stderr, "Error: failed to read pixel data from file '%s'\n",
+            filename);
     free(buffer);
     fclose(fp);
     return NULL;
@@ -88,7 +90,7 @@ PbmImage *ReadPbm(const char *filename) {
   // Allocate memory for image data
   PbmImage *image = AllocatePbm(width, height);
 
-  // Decode the pixel data from the buffer
+// Decode the pixel data from the buffer
 #pragma omp parallel for default(none) shared(image, buffer, width, height)
   for (size_t i = 0; i < width * height; i += 8) {
     // Read the next byte from the buffer
@@ -114,10 +116,11 @@ PbmImage *ReadPbm(const char *filename) {
  * @return Normalized image data
  */
 double *NormalizePgm(const PgmImage *image) {
-  double *double_data = (double *) malloc(image->width_ * image->height_ * sizeof(double));
+  double *double_data =
+      (double *)malloc(image->width_ * image->height_ * sizeof(double));
 #pragma omp parallel for default(none) shared(image, double_data)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-    double_data[i] = (double) image->data_[i] / PGM_MAX_GRAY_F;
+    double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
   return double_data;
 }
 
@@ -126,9 +129,7 @@ double *NormalizePgm(const PgmImage *image) {
  *
  * @return 128
  */
-uint8_t MiddleThreshold() {
-  return 128;
-}
+uint8_t MiddleThreshold() { return 128; }
 
 /**
  * Threshold function that returns a random value between 0 and 255.
@@ -146,13 +147,14 @@ uint8_t RandomThreshold() {
  *
  * @param image     The PGM image to convert.
  * @param threshold The threshold function (0-255) to use for the conversion.
- * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ * @return          A pointer to the new PBM image, or NULL if an error
+ * occurred.
  */
 PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
   // Allocate memory for new image data
   PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
-  // Convert pixel data
+// Convert pixel data
 #pragma omp parallel for default(none) shared(image, pbm_image, threshold)
   for (uint32_t i = 0; i < pbm_image->width_ * pbm_image->height_; i++)
     pbm_image->data_[i] = image->data_[i] < threshold();
@@ -164,7 +166,8 @@ PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
  * Convert a PGM image to a PBM image using Atkinson dithering.
  *
  * @param image     The PGM image to convert.
- * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ * @return          A pointer to the new PBM image, or NULL if an error
+ * occurred.
  */
 PbmImage *PgmToPbmAtkinson(const PgmImage *image) {
   // Allocate memory for new image data
@@ -222,7 +225,8 @@ PbmImage *PgmToPbmAtkinson(const PgmImage *image) {
  * Convert a PGM image to a PBM image using Bayer (Ordered) Dithering.
  *
  * @param image     The PGM image to convert.
- * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ * @return          A pointer to the new PBM image, or NULL if an error
+ * occurred.
  */
 PbmImage *PgmToPbmBayer(const PgmImage *image) {
   // Allocate memory for new image data
@@ -231,8 +235,9 @@ PbmImage *PgmToPbmBayer(const PgmImage *image) {
   // Normalize pixel data to [0, 1] double values
   double *double_data = NormalizePgm(image);
 
-  // Convert using Bayer (Ordered) Dithering
-#pragma omp parallel for default(none) shared(kBayer8X8, pbm_image, double_data) collapse(2)
+// Convert using Bayer (Ordered) Dithering
+#pragma omp parallel for default(none)                                         \
+    shared(kBayer8X8, pbm_image, double_data) collapse(2)
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
     for (uint32_t x = 0; x < pbm_image->width_; x++) {
       uint32_t pos = y * pbm_image->width_ + x;
@@ -247,7 +252,8 @@ PbmImage *PgmToPbmBayer(const PgmImage *image) {
  * Convert a PGM image to a PBM image using Floyd–Steinberg dithering.
  *
  * @param image     The PGM image to convert.
- * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ * @return          A pointer to the new PBM image, or NULL if an error
+ * occurred.
  */
 PbmImage *PgmToPbmFloydSteinberg(const PgmImage *image) {
   // Allocate memory for new image data
@@ -293,7 +299,8 @@ PbmImage *PgmToPbmFloydSteinberg(const PgmImage *image) {
  * Convert a PGM image to a PBM image using Jarvis, Judice, and Ninke dithering.
  *
  * @param image     The PGM image to convert.
- * @return          A pointer to the new PBM image, or NULL if an error occurred.
+ * @return          A pointer to the new PBM image, or NULL if an error
+ * occurred.
  */
 PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image) {
   // Allocate memory for new image data
@@ -387,14 +394,14 @@ bool WritePbm(const char *filename, const PbmImage *image) {
 
   // Allocate buffer for encoded pixel data
   size_t buffer_size = (image->width_ * image->height_ + 7) / 8;
-  uint8_t *buffer = (uint8_t *) calloc(1, buffer_size);
+  uint8_t *buffer = (uint8_t *)calloc(1, buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
     return false;
   }
 
-  // Encode pixel data
+// Encode pixel data
 #pragma omp parallel for default(none) shared(image, buffer)
   for (size_t i = 0; i < image->width_ * image->height_; i++) {
     buffer[i / 8] |= (image->data_[i] << (7 - i % 8));
@@ -402,7 +409,8 @@ bool WritePbm(const char *filename, const PbmImage *image) {
 
   // Write encoded pixel data to file
   if (fwrite(buffer, 1, buffer_size, fp) != buffer_size) {
-    fprintf(stderr, "Error: could not write pixel data to file '%s'\n", filename);
+    fprintf(stderr, "Error: could not write pixel data to file '%s'\n",
+            filename);
     free(buffer);
     fclose(fp);
     return false;
@@ -423,4 +431,4 @@ void FreePbm(PbmImage *image) {
   free(image);
 }
 
-#endif //NETPBM__PBM_H_
+#endif // NETPBM__PBM_H_

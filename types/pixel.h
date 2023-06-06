@@ -10,4 +10,4 @@ typedef struct {
   uint8_t b_;
 } Pixel;
 
-#endif //NETPBM_TYPES_PIXEL_H_
+#endif // NETPBM_TYPES_PIXEL_H_

@@ -1,8 +1,8 @@
 #ifndef NETPBM_TYPES_PPM_H_
 #define NETPBM_TYPES_PPM_H_
 
-#include <stdint.h>
 #include "pixel.h"
+#include <stdint.h>
 
 // PPM image format
 typedef struct {
@@ -12,4 +12,4 @@ typedef struct {
   Pixel *data_;
 } PpmImage;
 
-#endif //NETPBM_TYPES_PPM_H_
+#endif // NETPBM_TYPES_PPM_H_

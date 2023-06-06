@@ -1,8 +1,8 @@
 #ifndef NETPBM_TYPES_PGM_H_
 #define NETPBM_TYPES_PGM_H_
 
-#include <stdint.h>
 #include "pixel.h"
+#include <stdint.h>
 
 // PGM image format
 typedef struct {
@@ -15,4 +15,4 @@ typedef struct {
 // Luminance function
 typedef double (*LuminanceFn)(const Pixel *);
 
-#endif //NETPBM_TYPES_PGM_H_
+#endif // NETPBM_TYPES_PGM_H_

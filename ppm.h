@@ -1,14 +1,14 @@
 #ifndef NETPBM__PPM_H_
 #define NETPBM__PPM_H_
 
+#include "types/pgm.h"
+#include "types/ppm.h"
 #include <math.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "types/ppm.h"
-#include "types/pgm.h"
 
 #define PPM_MAX_COLOR 255
 #define PPM_MAX_COLOR_F 255.0
@@ -22,7 +22,7 @@
  */
 PpmImage *AllocatePpm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PpmImage *image = (PpmImage *) malloc(sizeof(PpmImage));
+  PpmImage *image = (PpmImage *)malloc(sizeof(PpmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
@@ -30,7 +30,7 @@ PpmImage *AllocatePpm(uint32_t width, uint32_t height) {
   image->width_ = width;
   image->height_ = height;
   image->max_color_ = PPM_MAX_COLOR;
-  image->data_ = (Pixel *) malloc(width * height * sizeof(Pixel));
+  image->data_ = (Pixel *)malloc(width * height * sizeof(Pixel));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -59,8 +59,8 @@ PpmImage *ReadPpm(const char *filename) {
   uint32_t width;
   uint32_t height;
   uint16_t max_color;
-  if (fscanf(fp, "%2s%*[ \t\r\n]%u%*[ \t\r\n]%u%*[ \t\r\n]%hu%*1[ \t\r\n]", magic, &width, &height, &max_color) !=
-      4) {
+  if (fscanf(fp, "%2s%*[ \t\r\n]%u%*[ \t\r\n]%u%*[ \t\r\n]%hu%*1[ \t\r\n]",
+             magic, &width, &height, &max_color) != 4) {
     fprintf(stderr, "Error: invalid header in file '%s'\n", filename);
     fclose(fp);
     return NULL;
@@ -83,10 +83,11 @@ PpmImage *ReadPpm(const char *filename) {
   // Allocate memory for image data
   PpmImage *image = AllocatePpm(width, height);
 
-
   // Read pixel data
-  if (fread(image->data_, sizeof(Pixel), width * height, fp) != width * height) {
-    fprintf(stderr, "Error: could not read pixel data from file '%s'\n", filename);
+  if (fread(image->data_, sizeof(Pixel), width * height, fp) !=
+      width * height) {
+    fprintf(stderr, "Error: could not read pixel data from file '%s'\n",
+            filename);
     free(image->data_);
     free(image);
     fclose(fp);
@@ -114,7 +115,8 @@ double LinearRgbValue(double s_rgb) {
  * @return SRgb value
  */
 double SRgbValue(double linear_rgb) {
-  return linear_rgb <= 0.0031308 ? 12.92 * linear_rgb : 1.055 * pow(linear_rgb, 1.0 / 2.4) - 0.055;
+  return linear_rgb <= 0.0031308 ? 12.92 * linear_rgb
+                                 : 1.055 * pow(linear_rgb, 1.0 / 2.4) - 0.055;
 }
 
 /**
@@ -123,9 +125,12 @@ double SRgbValue(double linear_rgb) {
  * @param s_rgb SRgb Pixel
  */
 void LinearRgb(Pixel *s_rgb) {
-  s_rgb->r_ = (uint8_t) (LinearRgbValue(s_rgb->r_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
-  s_rgb->g_ = (uint8_t) (LinearRgbValue(s_rgb->g_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
-  s_rgb->b_ = (uint8_t) (LinearRgbValue(s_rgb->b_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
+  s_rgb->r_ =
+      (uint8_t)(LinearRgbValue(s_rgb->r_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
+  s_rgb->g_ =
+      (uint8_t)(LinearRgbValue(s_rgb->g_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
+  s_rgb->b_ =
+      (uint8_t)(LinearRgbValue(s_rgb->b_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
 }
 
 /**
@@ -134,9 +139,12 @@ void LinearRgb(Pixel *s_rgb) {
  * @param linear_rgb Linear RGB color
  */
 void SRgb(Pixel *linear_rgb) {
-  linear_rgb->r_ = (uint8_t) (SRgbValue(linear_rgb->r_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
-  linear_rgb->g_ = (uint8_t) (SRgbValue(linear_rgb->g_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
-  linear_rgb->b_ = (uint8_t) (SRgbValue(linear_rgb->b_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
+  linear_rgb->r_ =
+      (uint8_t)(SRgbValue(linear_rgb->r_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
+  linear_rgb->g_ =
+      (uint8_t)(SRgbValue(linear_rgb->g_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
+  linear_rgb->b_ =
+      (uint8_t)(SRgbValue(linear_rgb->b_ / PPM_MAX_COLOR_F) * PPM_MAX_COLOR_F);
 }
 
 /**
@@ -155,9 +163,10 @@ PpmImage *PpmPixelConvert(PpmImage *image, void (*conversion_fn)(Pixel *)) {
   }
 
   // Copy the pixel data of the original image to the new image
-  memcpy(new_image->data_, image->data_, sizeof(Pixel) * new_image->width_ * new_image->height_);
+  memcpy(new_image->data_, image->data_,
+         sizeof(Pixel) * new_image->width_ * new_image->height_);
 
-  // Convert the pixel data of the new image using the given conversion function
+// Convert the pixel data of the new image using the given conversion function
 #pragma omp parallel for default(none) shared(new_image, conversion_fn)
   for (int i = 0; i < new_image->width_ * new_image->height_; i++)
     conversion_fn(&new_image->data_[i]);
@@ -201,16 +210,18 @@ bool WritePpm(const char *filename, const PpmImage *image) {
   }
 
   // Write magic number, width, height, and max color value
-  if (fprintf(fp, "P6\n%u\n%u\n%hu\n", image->width_, image->height_, image->max_color_) < 0) {
+  if (fprintf(fp, "P6\n%u\n%u\n%hu\n", image->width_, image->height_,
+              image->max_color_) < 0) {
     fprintf(stderr, "Error: could not write header to file '%s'\n", filename);
     fclose(fp);
     return false;
   }
 
   // Write pixel data
-  if (fwrite(image->data_, sizeof(uint8_t), image->width_ * image->height_ * 3, fp) !=
-      image->width_ * image->height_ * 3) {
-    fprintf(stderr, "Error: could not write pixel data to file '%s'\n", filename);
+  if (fwrite(image->data_, sizeof(uint8_t), image->width_ * image->height_ * 3,
+             fp) != image->width_ * image->height_ * 3) {
+    fprintf(stderr, "Error: could not write pixel data to file '%s'\n",
+            filename);
     fclose(fp);
     return false;
   }
@@ -229,4 +240,4 @@ void FreePpm(PpmImage *image) {
   free(image);
 }
 
-#endif //NETPBM__PPM_H_
+#endif // NETPBM__PPM_H_
