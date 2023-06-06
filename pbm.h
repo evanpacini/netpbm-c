@@ -82,10 +82,14 @@ PbmImage *ReadPbm(const char *filename) {
     return NULL;
   }
 
+  // Close file
+  fclose(fp);
+
   // Allocate memory for image data
   PbmImage *image = AllocatePbm(width, height);
 
   // Decode the pixel data from the buffer
+#pragma omp parallel for default(none) shared(image, buffer, width, height)
   for (size_t i = 0; i < width * height; i += 8) {
     // Read the next byte from the buffer
     uint8_t byte = buffer[i / 8];
@@ -99,9 +103,7 @@ PbmImage *ReadPbm(const char *filename) {
     }
   }
 
-  fclose(fp);
   free(buffer);
-
   return image;
 }
 
