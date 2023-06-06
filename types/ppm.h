@@ -1,6 +1,9 @@
 #ifndef NETPBM_TYPES_PPM_H_
 #define NETPBM_TYPES_PPM_H_
 
+#define PPM_MAX_COLOR 255
+#define PPM_MAX_COLOR_F 255.0
+
 #include "pixel.h"
 #include <stdint.h>
 

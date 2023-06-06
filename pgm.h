@@ -1,17 +1,13 @@
 #ifndef NETPBM__PGM_H_
 #define NETPBM__PGM_H_
 
-#include "bayer.h"
 #include "types/pbm.h"
 #include "types/pgm.h"
+#include "types/ppm.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/random.h>
-
-#define PGM_MAX_GRAY 255
-#define PGM_MAX_GRAY_F 255.0
 
 /**
  * Allocate memory for a PGM image.

@@ -1,6 +1,9 @@
 #ifndef NETPBM_TYPES_PGM_H_
 #define NETPBM_TYPES_PGM_H_
 
+#define PGM_MAX_GRAY 255
+#define PGM_MAX_GRAY_F 255.0
+
 #include "pixel.h"
 #include <stdint.h>
 

@@ -10,9 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PPM_MAX_COLOR 255
-#define PPM_MAX_COLOR_F 255.0
-
 /**
  * Allocate memory for a PPM image.
  *
