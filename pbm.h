@@ -14,9 +14,7 @@
 
 #include <sys/random.h>
 
-ssize_t MyRandom(void *buf, size_t len) {
-  return getrandom(buf, len, 0);
-}
+ssize_t MyRandom(void *buf, size_t len) { return getrandom(buf, len, 0); }
 
 #else /* not linux */
 
@@ -118,7 +116,7 @@ PbmImage *ReadPbm(const char *filename) {
   // Allocate memory for image data
   PbmImage *image = AllocatePbm(width, height);
 
-// Decode the pixel data from the buffer
+  // Decode the pixel data from the buffer
 #pragma omp parallel for default(none) shared(image, buffer, width, height)
   for (size_t i = 0; i < width * height; i += 8) {
     // Read the next byte from the buffer
@@ -182,7 +180,7 @@ PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
   // Allocate memory for new image data
   PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
-// Convert pixel data
+  // Convert pixel data
 #pragma omp parallel for default(none) shared(image, pbm_image, threshold)
   for (uint32_t i = 0; i < pbm_image->width_ * pbm_image->height_; i++)
     pbm_image->data_[i] = image->data_[i] < threshold();
@@ -263,7 +261,7 @@ PbmImage *PgmToPbmBayer(const PgmImage *image) {
   // Normalize pixel data to [0, 1] double values
   double *double_data = NormalizePgm(image);
 
-// Convert using Bayer (Ordered) Dithering
+  // Convert using Bayer (Ordered) Dithering
 #pragma omp parallel for default(none)                                         \
     shared(kBayer8X8, pbm_image, double_data) collapse(2)
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
@@ -419,7 +417,7 @@ bool WritePbm(const char *filename, const PbmImage *image) {
     return false;
   }
 
-// Encode pixel data
+  // Encode pixel data
 #pragma omp parallel for default(none) shared(image, buffer)
   for (size_t i = 0; i < image->width_ * image->height_; i++) {
     buffer[i / 8] |= (image->data_[i] << (7 - i % 8));
