@@ -9,7 +9,35 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/random.h>
+
+#if defined __GLIBC__ && defined __linux__
+
+#  include <sys/random.h>
+
+ssize_t my_random(void *buf, size_t len)
+{
+    return getrandom((ssize_t) buf, len, 0);
+}
+
+#else /* not linux */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
+ssize_t my_random(void *buf, size_t len) {
+    unsigned char *buffer = (unsigned char*)buf;
+    size_t i;
+
+    for (i = 0; i < len; ++i) {
+        buffer[i] = (unsigned char) rand();
+    }
+
+    return (ssize_t) len;
+}
+
+#endif
+
 
 /**
  * Allocate memory for a PBM image.
@@ -140,7 +168,7 @@ uint8_t MiddleThreshold() { return 128; }
  */
 uint8_t RandomThreshold() {
   uint8_t random;
-  getrandom(&random, sizeof(uint8_t), 0);
+    my_random(&random, sizeof(uint8_t));
   return random;
 }
 
