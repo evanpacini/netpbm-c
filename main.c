@@ -38,15 +38,21 @@ int main(void) {
   FreePgm(pbm_to_pgm_random);
 
   // compare using difference
-  PgmImage *pbm_to_pgm_random_blur_diff = PgmDiff(pbm_to_pgm_random_blur, pgm_blur);
+  PgmImage *pbm_to_pgm_random_blur_diff =
+      PgmDiff(pbm_to_pgm_random_blur, pgm_blur);
   WritePgm("../output/random_blur_diff.pgm", pbm_to_pgm_random_blur_diff);
 
   // show sum of difference
-  double pbm_to_pgm_random_blur_diff_sum = PgmSum(pbm_to_pgm_random_blur_diff, 1);
+  double pbm_to_pgm_random_blur_diff_sum =
+      PgmSum(pbm_to_pgm_random_blur_diff, 1);
   printf("Sum of difference: %f\n", pbm_to_pgm_random_blur_diff_sum);
-  printf("Average difference: %f\n", pbm_to_pgm_random_blur_diff_sum / (pbm_to_pgm_random_blur_diff->width_ * pbm_to_pgm_random_blur_diff->height_));
+  printf("Average difference: %f\n",
+         pbm_to_pgm_random_blur_diff_sum /
+             (pbm_to_pgm_random_blur_diff->width_ *
+              pbm_to_pgm_random_blur_diff->height_));
   printf("Variance: %f\n", PgmVariance(pbm_to_pgm_random_blur_diff));
-  printf("Standard deviation: %f\n", pow(PgmVariance(pbm_to_pgm_random_blur_diff), .5));
+  printf("Standard deviation: %f\n",
+         pow(PgmVariance(pbm_to_pgm_random_blur_diff), .5));
 
   FreePgm(pbm_to_pgm_random_blur_diff);
 

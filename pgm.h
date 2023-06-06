@@ -4,11 +4,11 @@
 #include "types/pbm.h"
 #include "types/pgm.h"
 #include "types/ppm.h"
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 /**
  * Allocate memory for a PGM image.
@@ -19,7 +19,7 @@
  */
 PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PgmImage *image = (PgmImage *) calloc(1, sizeof(PgmImage));
+  PgmImage *image = (PgmImage *)calloc(1, sizeof(PgmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
@@ -27,7 +27,7 @@ PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   image->width_ = width;
   image->height_ = height;
   image->max_gray_ = PGM_MAX_GRAY;
-  image->data_ = (uint8_t *) calloc(1, width * height * sizeof(uint8_t));
+  image->data_ = (uint8_t *)calloc(1, width * height * sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -110,14 +110,14 @@ PgmImage *PpmToPgm(const PpmImage *image, LuminanceFn luminance) {
     return NULL;
   }
 
-// Convert pixel data from PPM image to PGM image
+  // Convert pixel data from PPM image to PGM image
 #pragma omp parallel for default(none) shared(pgm_image, image, luminance)
   for (uint32_t i = 0; i < pgm_image->height_ * pgm_image->width_; i++) {
     // Get pixel from PPM image
     Pixel p = image->data_[i];
 
     // Calculate luminance of pixel
-    uint8_t y = (uint8_t) luminance(&p);
+    uint8_t y = (uint8_t)luminance(&p);
 
     // Set luminance value in PGM image
     pgm_image->data_[i] = y;
@@ -139,7 +139,7 @@ PgmImage *PbmToPgm(const PbmImage *image) {
     return NULL;
   }
 
-  // Convert pixel data
+// Convert pixel data
 #pragma omp parallel for default(none) shared(pgm, image)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
     // Set pixel value in PGM image
@@ -161,7 +161,7 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
   // Allocate memory for new image data
   PgmImage *new_image = AllocatePgm(image->width_, image->height_);
 
-// Blur pixel data
+  // Blur pixel data
 #pragma omp parallel for default(none) shared(image, new_image, radius)        \
     collapse(2)
   for (uint32_t y = 0; y < image->height_; y++) {
@@ -177,7 +177,7 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
           }
         }
       }
-      new_image->data_[y * image->width_ + x] = (uint8_t) (sum / count);
+      new_image->data_[y * image->width_ + x] = (uint8_t)(sum / count);
     }
   }
 
@@ -197,10 +197,10 @@ PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
   // Allocate memory for new image data
   PgmImage *new_image = AllocatePgm(image1->width_, image1->height_);
 
-  // Calculate difference
+// Calculate difference
 #pragma omp parallel for default(none) shared(image1, image2, new_image)
   for (uint32_t i = 0; i < image1->height_ * image1->width_; i++) {
-    new_image->data_[i] = (uint8_t) abs(image1->data_[i] - image2->data_[i]);
+    new_image->data_[i] = (uint8_t)abs(image1->data_[i] - image2->data_[i]);
   }
 
   return new_image;
@@ -214,10 +214,10 @@ PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
 double PgmSum(PgmImage *image, double p) {
   double sum = 0;
 
-  // Sum pixels
-#pragma omp parallel for default(none) shared(image, p) reduction(+:sum)
+// Sum pixels
+#pragma omp parallel for default(none) shared(image, p) reduction(+ : sum)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
-    sum += pow((double) image->data_[i], p);
+    sum += pow((double)image->data_[i], p);
   }
 
   return sum;
@@ -231,14 +231,14 @@ double PgmSum(PgmImage *image, double p) {
  */
 double PgmVariance(PgmImage *image) {
   // Calculate mean
-  double mean = (double) PgmSum(image, 1) / (image->width_ * image->height_);
+  double mean = (double)PgmSum(image, 1) / (image->width_ * image->height_);
 
   // Calculate variance
   double variance = 0;
 
 #pragma omp parallel for default(none) shared(image, mean) reduction(+:variance)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
-    variance += pow((double) image->data_[i] - mean, 2);
+    variance += pow((double)image->data_[i] - mean, 2);
   }
   variance /= image->width_ * image->height_;
 
