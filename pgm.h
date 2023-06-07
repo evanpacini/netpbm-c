@@ -1,6 +1,7 @@
 #ifndef NETPBM__PGM_H_
 #define NETPBM__PGM_H_
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -110,7 +111,7 @@ PgmImage *PpmToPgm(const PpmImage *image, LuminanceFn luminance) {
     return NULL;
   }
 
-// Convert pixel data from PPM image to PGM image
+  // Convert pixel data from PPM image to PGM image
 #pragma omp parallel for default(none) shared(pgm_image, image, luminance)
   for (uint32_t i = 0; i < pgm_image->height_ * pgm_image->width_; i++) {
     // Get pixel from PPM image
@@ -139,7 +140,7 @@ PgmImage *PbmToPgm(const PbmImage *image) {
     return NULL;
   }
 
-  // Convert pixel data
+// Convert pixel data
 #pragma omp parallel for default(none) shared(pgm, image)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
     // Set pixel value in PGM image
@@ -161,7 +162,7 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
   // Allocate memory for new image data
   PgmImage *new_image = AllocatePgm(image->width_, image->height_);
 
-// Blur pixel data
+  // Blur pixel data
 #pragma omp parallel for default(none) shared(image, new_image, radius) \
     collapse(2)
   for (uint32_t y = 0; y < image->height_; y++) {
@@ -182,6 +183,67 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
   }
 
   return new_image;
+}
+
+/**
+ * Difference between two pgm images expressed as an image itself.
+ * Each pixel of the returned image is the absolute difference between the
+ * corresponding pixels of the input images.
+ *
+ * @param image1 First image
+ * @param image2 Second image
+ * @return Difference image
+ */
+PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
+  // Allocate memory for new image data
+  PgmImage *new_image = AllocatePgm(image1->width_, image1->height_);
+
+// Calculate difference
+#pragma omp parallel for default(none) shared(image1, image2, new_image)
+  for (uint32_t i = 0; i < image1->height_ * image1->width_; i++) {
+    new_image->data_[i] = (uint8_t)abs(image1->data_[i] - image2->data_[i]);
+  }
+
+  return new_image;
+}
+
+/**
+ * Sum the pixels of an image raised to some power p.
+ *
+ * @param image Image to sum
+ */
+double PgmSum(PgmImage *image, double p) {
+  double sum = 0;
+
+// Sum pixels
+#pragma omp parallel for default(none) shared(image, p) reduction(+ : sum)
+  for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
+    sum += pow((double)image->data_[i], p);
+  }
+
+  return sum;
+}
+
+/**
+ * Calculate the variance of the distribution of pixel values in an image.
+ *
+ * @param image Image to calculate variance of
+ * @return      Variance of pixel values
+ */
+double PgmVariance(PgmImage *image) {
+  // Calculate mean
+  double mean = (double)PgmSum(image, 1) / (image->width_ * image->height_);
+
+  // Calculate variance
+  double variance = 0;
+
+#pragma omp parallel for default(none) shared(image, mean) reduction(+:variance)
+  for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
+    variance += pow((double)image->data_[i] - mean, 2);
+  }
+  variance /= image->width_ * image->height_;
+
+  return variance;
 }
 
 /**

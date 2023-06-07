@@ -13,6 +13,10 @@ int main(void) {
   PgmImage *ppm_to_pgm = PpmToPgm(read_ppm, SRgbLuminance);
   WritePgm("../output/grayscale.pgm", ppm_to_pgm);
 
+  // Blur the greyscale image
+  PgmImage *pgm_blur = KasperBlur(ppm_to_pgm, 5);
+  WritePgm("../output/grayscale_blur.pgm", pgm_blur);
+
   // No dithering
   PbmImage *pgm_to_pbm = PgmToPbm(ppm_to_pgm, MiddleThreshold);
   WritePbm("../output/binary.pbm", pgm_to_pbm);
@@ -30,9 +34,31 @@ int main(void) {
   // Apply blur
   PgmImage *pbm_to_pgm_random_blur = KasperBlur(pbm_to_pgm_random, 5);
   WritePgm("../output/random_blur.pgm", pbm_to_pgm_random_blur);
-  FreePgm(pbm_to_pgm_random_blur);
 
   FreePgm(pbm_to_pgm_random);
+
+  // compare using difference
+  PgmImage *pbm_to_pgm_random_blur_diff =
+      PgmDiff(pbm_to_pgm_random_blur, pgm_blur);
+  WritePgm("../output/random_blur_diff.pgm", pbm_to_pgm_random_blur_diff);
+
+  // show sum of difference
+  double pbm_to_pgm_random_blur_diff_sum =
+      PgmSum(pbm_to_pgm_random_blur_diff, 1);
+  printf("Sum of difference: %f\n", pbm_to_pgm_random_blur_diff_sum);
+  printf(
+      "Average difference: %f\n",
+      pbm_to_pgm_random_blur_diff_sum / (pbm_to_pgm_random_blur_diff->width_ *
+                                         pbm_to_pgm_random_blur_diff->height_));
+  printf("Variance: %f\n", PgmVariance(pbm_to_pgm_random_blur_diff));
+  printf("Standard deviation: %f\n",
+         pow(PgmVariance(pbm_to_pgm_random_blur_diff), .5));
+
+  FreePgm(pbm_to_pgm_random_blur_diff);
+
+  FreePgm(pbm_to_pgm_random_blur);
+
+  FreePgm(pgm_blur);
 
   // Floyd-Steinberg dithering
   PbmImage *pgm_to_pbm_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm);
