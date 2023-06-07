@@ -1,8 +1,10 @@
 #include "pbm.h"
 #include "pgm.h"
 #include "ppm.h"
+#include <time.h>
 
 int main(void) {
+  srand(time(NULL));
   // Read PPM image
   PpmImage *read_ppm = ReadPpm("../input/tud2.ppm");
   WritePpm("../output/normal.ppm", read_ppm);
@@ -12,6 +14,16 @@ int main(void) {
 
   PgmImage *ppm_to_pgm = PpmToPgm(read_ppm, SRgbLuminance);
   WritePgm("../output/grayscale.pgm", ppm_to_pgm);
+
+  // Add square for iterations frames to greyscale image
+  const int iterations = 3;
+  PgmImage **pgm_squares = AddSquare(ppm_to_pgm, 100, 125, iterations, RandomInteger);
+  for (int i = 0; i < iterations; i++) {
+    char filename[100];
+    sprintf(filename, "../output/grayscale_square_%d.pgm", i + 1);
+    WritePgm(filename, pgm_squares[i]);
+  }
+
 
   // Blur the greyscale image
   PgmImage *pgm_blur = KasperBlur(ppm_to_pgm, 5);
@@ -30,6 +42,24 @@ int main(void) {
   PgmImage *pbm_to_pgm_random = PbmToPgm(pgm_to_pbm_random);
   FreePbm(pgm_to_pbm_random);
   WritePgm("../output/random.pgm", pbm_to_pgm_random);
+
+  // Random dithering pgm_squares with difference
+  for (int i = 0; i < iterations; i++) {
+    char filename[100];
+    sprintf(filename, "../output/square_random_%d.pbm", i + 1);
+    PbmImage *pbm_square_random = PgmToPbm(pgm_squares[i], RandomThreshold);
+    WritePbm(filename, pbm_square_random);
+
+    PgmImage *pgm_square_random = PbmToPgm(pbm_square_random);
+    PgmImage *square_random_diff =
+        PgmDiff(pgm_square_random, pbm_to_pgm_random);
+    char filename2[100];
+    sprintf(filename2, "../output/square_random_diff_%d.pgm", i + 1);
+    WritePgm(filename2, square_random_diff);
+
+    FreePbm(pbm_square_random);
+    FreePgm(pgm_square_random);
+  }
 
   // Apply blur
   PgmImage *pbm_to_pgm_random_blur = KasperBlur(pbm_to_pgm_random, 5);
@@ -88,7 +118,29 @@ int main(void) {
   // Bayer dithering
   PbmImage *pgm_to_pbm_bayer = PgmToPbmBayer(ppm_to_pgm);
   WritePbm("../output/binary_bayer.pbm", pgm_to_pbm_bayer);
+
+  // Bayer to pgm
+  PgmImage *pbm_to_pgm_bayer = PbmToPgm(pgm_to_pbm_bayer);
+  WritePgm("../output/bayer.pgm", pbm_to_pgm_bayer);
+
   FreePbm(pgm_to_pbm_bayer);
+
+  // Bayer dithering pgm_squares with difference
+  for (int i = 0; i < iterations; i++) {
+    char filename[100];
+    sprintf(filename, "../output/square_bayer_%d.pbm", i + 1);
+    PbmImage *pbm_square_bayer = PgmToPbmBayer(pgm_squares[i]);
+    WritePbm(filename, pbm_square_bayer);
+
+    PgmImage *pgm_square_bayer = PbmToPgm(pbm_square_bayer);
+    PgmImage *square_bayer_diff = PgmDiff(pgm_square_bayer, pbm_to_pgm_bayer);
+    char filename2[100];
+    sprintf(filename2, "../output/square_bayer_diff_%d.pgm", i + 1);
+    WritePgm(filename2, square_bayer_diff);
+
+    FreePbm(pbm_square_bayer);
+    FreePgm(pgm_square_bayer);
+  }
 
   // Kasper blur
   PgmImage *pgm_to_pgm_kasper_blur = KasperBlur(ppm_to_pgm, 3);
@@ -189,6 +241,12 @@ int main(void) {
   FreePbm(pgm_to_pbm_linear_bayer);
 
   FreePgm(ppm_to_pgm_linear);
+
+  // Free pgm_squares
+  for (int i = 0; i < 10; i++) {
+    FreePgm(pgm_squares[i]);
+  }
+  free(pgm_squares);
 
   return 0;
 }
