@@ -1,14 +1,15 @@
 #ifndef NETPBM__PPM_H_
 #define NETPBM__PPM_H_
 
-#include "types/pgm.h"
-#include "types/ppm.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "types/pgm.h"
+#include "types/ppm.h"
 
 /**
  * Allocate memory for a PPM image.
@@ -24,10 +25,10 @@ PpmImage *AllocatePpm(uint32_t width, uint32_t height) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
   }
-  image->width_ = width;
-  image->height_ = height;
+  image->width_     = width;
+  image->height_    = height;
   image->max_color_ = PPM_MAX_COLOR;
-  image->data_ = (Pixel *)malloc(width * height * sizeof(Pixel));
+  image->data_      = (Pixel *)malloc(width * height * sizeof(Pixel));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -237,4 +238,4 @@ void FreePpm(PpmImage *image) {
   free(image);
 }
 
-#endif // NETPBM__PPM_H_
+#endif// NETPBM__PPM_H_

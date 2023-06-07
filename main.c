@@ -76,10 +76,10 @@ int main(void) {
   double pbm_to_pgm_random_blur_diff_sum =
       PgmSum(pbm_to_pgm_random_blur_diff, 1);
   printf("Sum of difference: %f\n", pbm_to_pgm_random_blur_diff_sum);
-  printf("Average difference: %f\n",
-         pbm_to_pgm_random_blur_diff_sum /
-             (pbm_to_pgm_random_blur_diff->width_ *
-              pbm_to_pgm_random_blur_diff->height_));
+  printf(
+      "Average difference: %f\n",
+      pbm_to_pgm_random_blur_diff_sum / (pbm_to_pgm_random_blur_diff->width_ *
+                                         pbm_to_pgm_random_blur_diff->height_));
   printf("Variance: %f\n", PgmVariance(pbm_to_pgm_random_blur_diff));
   printf("Standard deviation: %f\n",
          pow(PgmVariance(pbm_to_pgm_random_blur_diff), .5));

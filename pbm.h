@@ -1,14 +1,15 @@
 #ifndef NETPBM__PBM_H_
 #define NETPBM__PBM_H_
 
-#include "bayer.h"
-#include "types/pbm.h"
-#include "types/pgm.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "bayer.h"
+#include "types/pbm.h"
+#include "types/pgm.h"
 
 #if defined __GLIBC__ && defined __linux__
 
@@ -49,9 +50,9 @@ PbmImage *AllocatePbm(uint32_t width, uint32_t height) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
   }
-  image->width_ = width;
+  image->width_  = width;
   image->height_ = height;
-  image->data_ = (uint8_t *)malloc(width * height * sizeof(uint8_t));
+  image->data_   = (uint8_t *)malloc(width * height * sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -94,7 +95,7 @@ PbmImage *ReadPbm(const char *filename) {
 
   // Allocate memory for buffer
   size_t buffer_size = (size_t)((width * height + 7) / 8);
-  uint8_t *buffer = (uint8_t *)malloc(buffer_size);
+  uint8_t *buffer    = (uint8_t *)malloc(buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
@@ -205,7 +206,7 @@ PbmImage *PgmToPbmAtkinson(const PgmImage *image) {
   // Convert pixel data using Atkinson dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
     for (uint32_t x = 0; x < pbm_image->width_; x++) {
-      uint32_t pos = y * pbm_image->width_ + x;
+      uint32_t pos     = y * pbm_image->width_ + x;
       double old_pixel = double_data[pos];
       double new_pixel = round(old_pixel);
 
@@ -262,11 +263,11 @@ PbmImage *PgmToPbmBayer(const PgmImage *image) {
   double *double_data = NormalizePgm(image);
 
 // Convert using Bayer (Ordered) Dithering
-#pragma omp parallel for default(none)                                         \
+#pragma omp parallel for default(none) \
     shared(kBayer8X8, pbm_image, double_data) collapse(2)
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
     for (uint32_t x = 0; x < pbm_image->width_; x++) {
-      uint32_t pos = y * pbm_image->width_ + x;
+      uint32_t pos          = y * pbm_image->width_ + x;
       pbm_image->data_[pos] = double_data[pos] < kBayer8X8[x & 7][y & 7];
     }
   }
@@ -291,7 +292,7 @@ PbmImage *PgmToPbmFloydSteinberg(const PgmImage *image) {
   // Convert pixel data using Floyd-Steinberg dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
     for (uint32_t x = 0; x < pbm_image->width_; x++) {
-      uint32_t pos = y * pbm_image->width_ + x;
+      uint32_t pos     = y * pbm_image->width_ + x;
       double old_pixel = double_data[pos];
       double new_pixel = round(old_pixel);
 
@@ -338,7 +339,7 @@ PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image) {
   // Convert pixel data using Jarvis, Judice, and Ninke dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
     for (uint32_t x = 0; x < pbm_image->width_; x++) {
-      uint32_t pos = y * pbm_image->width_ + x;
+      uint32_t pos     = y * pbm_image->width_ + x;
       double old_pixel = double_data[pos];
       double new_pixel = round(old_pixel);
 
@@ -410,7 +411,7 @@ bool WritePbm(const char *filename, const PbmImage *image) {
 
   // Allocate buffer for encoded pixel data
   size_t buffer_size = (image->width_ * image->height_ + 7) / 8;
-  uint8_t *buffer = (uint8_t *)calloc(1, buffer_size);
+  uint8_t *buffer    = (uint8_t *)calloc(1, buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
@@ -447,4 +448,4 @@ void FreePbm(PbmImage *image) {
   free(image);
 }
 
-#endif // NETPBM__PBM_H_
+#endif// NETPBM__PBM_H_
