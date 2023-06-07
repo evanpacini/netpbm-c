@@ -1,7 +1,8 @@
+#include <time.h>
+
 #include "pbm.h"
 #include "pgm.h"
 #include "ppm.h"
-#include <time.h>
 
 int main(void) {
   srand(time(NULL));
@@ -17,13 +18,13 @@ int main(void) {
 
   // Add square for iterations frames to greyscale image
   const int iterations = 3;
-  PgmImage **pgm_squares = AddSquare(ppm_to_pgm, 100, 125, iterations, RandomInteger);
+  PgmImage **pgm_squares =
+      AddSquare(ppm_to_pgm, 100, 125, iterations, RandomInteger);
   for (int i = 0; i < iterations; i++) {
     char filename[100];
     sprintf(filename, "../output/grayscale_square_%d.pgm", i + 1);
     WritePgm(filename, pgm_squares[i]);
   }
-
 
   // Blur the greyscale image
   PgmImage *pgm_blur = KasperBlur(ppm_to_pgm, 5);
@@ -132,7 +133,7 @@ int main(void) {
     PbmImage *pbm_square_bayer = PgmToPbmBayer(pgm_squares[i]);
     WritePbm(filename, pbm_square_bayer);
 
-    PgmImage *pgm_square_bayer = PbmToPgm(pbm_square_bayer);
+    PgmImage *pgm_square_bayer  = PbmToPgm(pbm_square_bayer);
     PgmImage *square_bayer_diff = PgmDiff(pgm_square_bayer, pbm_to_pgm_bayer);
     char filename2[100];
     sprintf(filename2, "../output/square_bayer_diff_%d.pgm", i + 1);

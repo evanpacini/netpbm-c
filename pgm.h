@@ -16,9 +16,7 @@ typedef uint32_t (*RandomFn)();
  *
  * @return A random number between 0 and 2^32 - 1.
  */
-uint32_t RandomInteger() {
-  return rand();
-}
+uint32_t RandomInteger() { return rand(); }
 
 #include "types/pbm.h"
 #include "types/pgm.h"
@@ -124,7 +122,7 @@ PgmImage *PpmToPgm(const PpmImage *image, LuminanceFn luminance) {
     return NULL;
   }
 
-  // Convert pixel data from PPM image to PGM image
+// Convert pixel data from PPM image to PGM image
 #pragma omp parallel for default(none) shared(pgm_image, image, luminance)
   for (uint32_t i = 0; i < pgm_image->height_ * pgm_image->width_; i++) {
     // Get pixel from PPM image
@@ -153,7 +151,7 @@ PgmImage *PbmToPgm(const PbmImage *image) {
     return NULL;
   }
 
-// Convert pixel data
+  // Convert pixel data
 #pragma omp parallel for default(none) shared(pgm, image)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
     // Set pixel value in PGM image
@@ -175,7 +173,7 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
   // Allocate memory for new image data
   PgmImage *new_image = AllocatePgm(image->width_, image->height_);
 
-  // Blur pixel data
+// Blur pixel data
 #pragma omp parallel for default(none) shared(image, new_image, radius) \
     collapse(2)
   for (uint32_t y = 0; y < image->height_; y++) {
@@ -199,7 +197,8 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
 }
 
 /**
- * Add a single grey square to the image at a random coordinate and moves it around randomly.
+ * Add a single grey square to the image at a random coordinate and moves it
+ * around randomly.
  *
  * @param image Input PgmImage
  * @param square_size Size of the square
@@ -208,7 +207,8 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
  * @param random Random function
  * @return Array of images with the square added and moved
  */
-PgmImage **AddSquare(PgmImage *image, uint8_t square_size, uint8_t square_color, uint32_t iterations, RandomFn random) {
+PgmImage **AddSquare(PgmImage *image, uint8_t square_size, uint8_t square_color,
+                     uint32_t iterations, RandomFn random) {
   // Allocate memory for new image data
   PgmImage **new_images = (PgmImage **)malloc(sizeof(PgmImage *) * iterations);
   for (uint32_t i = 0; i < iterations; i++) {
@@ -226,7 +226,8 @@ PgmImage **AddSquare(PgmImage *image, uint8_t square_size, uint8_t square_color,
     memcpy(new_images[i]->data_, image->data_,
            sizeof(uint8_t) * image->width_ * image->height_);
 
-    // Move square. Make sure the move is valid (square stays within image boundaries) if not the case, change direction
+    // Move square. Make sure the move is valid (square stays within image
+    // boundaries) if not the case, change direction
     for (uint8_t max_attempts = 10; max_attempts > 0; max_attempts--) {
       uint8_t direction = random() % 4;
       while (direction == previous_direction) {
@@ -243,14 +244,16 @@ PgmImage **AddSquare(PgmImage *image, uint8_t square_size, uint8_t square_color,
         x -= square_size;
       } else if (direction == 3 && y - square_size >= 0) {
         y -= square_size;
-      } else continue;
+      } else
+        continue;
       break;
     }
 
     // Add square to image
     for (uint8_t yy = 0; yy < square_size; yy++) {
       for (uint8_t xx = 0; xx < square_size; xx++) {
-        new_images[i]->data_[(y + yy) * image->width_ + (x + xx)] = square_color;
+        new_images[i]->data_[(y + yy) * image->width_ + (x + xx)] =
+            square_color;
       }
     }
   }
@@ -271,7 +274,7 @@ PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
   // Allocate memory for new image data
   PgmImage *new_image = AllocatePgm(image1->width_, image1->height_);
 
-// Calculate difference
+  // Calculate difference
 #pragma omp parallel for default(none) shared(image1, image2, new_image)
   for (uint32_t i = 0; i < image1->height_ * image1->width_; i++) {
     new_image->data_[i] = (uint8_t)abs(image1->data_[i] - image2->data_[i]);
@@ -288,7 +291,7 @@ PgmImage *PgmDiff(PgmImage *image1, PgmImage *image2) {
 double PgmSum(PgmImage *image, double p) {
   double sum = 0;
 
-// Sum pixels
+  // Sum pixels
 #pragma omp parallel for default(none) shared(image, p) reduction(+ : sum)
   for (uint32_t i = 0; i < image->height_ * image->width_; i++) {
     sum += pow((double)image->data_[i], p);
