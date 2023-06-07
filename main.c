@@ -244,7 +244,7 @@ int main(void) {
   FreePgm(ppm_to_pgm_linear);
 
   // Free pgm_squares
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < iterations; i++) {
     FreePgm(pgm_squares[i]);
   }
   free(pgm_squares);
