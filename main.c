@@ -4,7 +4,7 @@
 #include "pgm.h"
 #include "sat.h"
 
-void printPgm(PgmImage *pgm) {
+void PrintPgm(PgmImage *pgm) {
   for (uint32_t y = 0; y < pgm->height_; y++) {
     for (uint32_t x = 0; x < pgm->width_; x++) {
       printf("%d\t", pgm->data_[y * pgm->width_ + x]);
@@ -13,7 +13,7 @@ void printPgm(PgmImage *pgm) {
   }
 }
 
-void printSat(SummedAreaTable *sat) {
+void PrintSat(SummedAreaTable *sat) {
   for (uint32_t y = 0; y < sat->height_; y++) {
     for (uint32_t x = 0; x < sat->width_; x++) {
       printf("%lu\t", sat->data_[y * sat->width_ + x]);
@@ -29,13 +29,13 @@ int main(void) {
       pgm->data_[y * pgm->width_ + x] = 1;
     }
   }
-  printPgm(pgm);
+  PrintPgm(pgm);
 
   SummedAreaTable *sat = PgmToSat(pgm);
 
   printf("\n");
 
-  printSat(sat);
+  PrintSat(sat);
 
   FreeSat(sat);
   return 0;
