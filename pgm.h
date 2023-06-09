@@ -6,6 +6,17 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+// Random function
+typedef uint32_t (*RandomFn)();
+
+/**
+ * Random function with seed as time(NULL).
+ *
+ * @return A random number between 0 and 2^32 - 1.
+ */
+uint32_t RandomInteger() { return rand(); }
 
 #include "types/pbm.h"
 #include "types/pgm.h"
@@ -183,6 +194,71 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
   }
 
   return new_image;
+}
+
+/**
+ * Add a single grey square to the image at a random coordinate and moves it
+ * around randomly.
+ *
+ * @param image Input PgmImage
+ * @param square_size Size of the square
+ * @param square_color Color of the square: greyscale value between 0 and 255
+ * @param iterations Number of iterations
+ * @param random Random function
+ * @return Array of images with the square added and moved
+ */
+PgmImage **AddSquare(PgmImage *image, uint8_t square_size, uint8_t square_color,
+                     uint32_t iterations, RandomFn random) {
+  // Allocate memory for new image data
+  PgmImage **new_images = (PgmImage **)malloc(sizeof(PgmImage *) * iterations);
+  for (uint32_t i = 0; i < iterations; i++) {
+    new_images[i] = AllocatePgm(image->width_, image->height_);
+  }
+
+  // Generate square coordinates
+  int64_t x = random() % (image->width_ - square_size);
+  int64_t y = random() % (image->height_ - square_size);
+
+  // Move square around one square size per step in a random direction
+  uint8_t previous_direction = -1;
+  for (uint32_t i = 0; i < iterations; i++) {
+    // Copy image data
+    memcpy(new_images[i]->data_, image->data_,
+           sizeof(uint8_t) * image->width_ * image->height_);
+
+    // Move square. Make sure the move is valid (square stays within image
+    // boundaries) if not the case, change direction
+    for (uint8_t max_attempts = 10; max_attempts > 0; max_attempts--) {
+      uint8_t direction = random() % 4;
+      while (direction == previous_direction) {
+        direction = random() % 4;
+      }
+      // make sure the square doesn't move back to where it came from
+      previous_direction = (direction + 2) % 4;
+      // check if valid move
+      if (direction == 0 && x + square_size * 2 < image->width_) {
+        x += square_size;
+      } else if (direction == 1 && y + square_size * 2 < image->height_) {
+        y += square_size;
+      } else if (direction == 2 && x - square_size >= 0) {
+        x -= square_size;
+      } else if (direction == 3 && y - square_size >= 0) {
+        y -= square_size;
+      } else
+        continue;
+      break;
+    }
+
+    // Add square to image
+    for (uint8_t yy = 0; yy < square_size; yy++) {
+      for (uint8_t xx = 0; xx < square_size; xx++) {
+        new_images[i]->data_[(y + yy) * image->width_ + (x + xx)] =
+            square_color;
+      }
+    }
+  }
+
+  return new_images;
 }
 
 /**
