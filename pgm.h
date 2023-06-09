@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "sat.h"
 #include "types/pbm.h"
 #include "types/pgm.h"
 #include "types/ppm.h"
@@ -179,6 +180,40 @@ PgmImage *KasperBlur(PgmImage *image, int8_t radius) {
         }
       }
       new_image->data_[y * image->width_ + x] = (uint8_t)(sum / count);
+    }
+  }
+
+  return new_image;
+}
+
+/**
+ * Each pixel becomes the average of a box surrounding that pixel with side
+ * 2r + 1.
+ *
+ * @param sat       Summed area table of the image
+ * @param radius    Radius of the square
+ * @return          Blurred image
+ */
+PgmImage *BoxBlur(SummedAreaTable *sat, int8_t radius) {
+  // Get image dimensions for convenience
+  uint32_t width  = sat->width_;
+  uint32_t height = sat->height_;
+
+  // Allocate memory for new image data
+  PgmImage *new_image = AllocatePgm(width, height);
+
+#pragma omp parallel for default(none) \
+    shared(new_image, sat, width, height, radius)
+  // Blur pixel data
+  for (int64_t y = 0; y < height; y++) {
+    for (int64_t x = 0; x < width; x++) {
+      uint32_t tlx   = (x - radius >= 0) ? x - radius : 0;
+      uint32_t tly   = (y - radius >= 0) ? y - radius : 0;
+      uint32_t brx   = (x + radius < width) ? x + radius : width - 1;
+      uint32_t bry   = (y + radius < height) ? y + radius : height - 1;
+      uint64_t sum   = SatQuery(sat, tlx, tly, brx, bry);
+      uint16_t count = (brx - tlx + 1) * (bry - tly + 1);
+      new_image->data_[y * width + x] = (uint8_t)(sum / count);
     }
   }
 
