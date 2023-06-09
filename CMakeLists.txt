@@ -16,5 +16,5 @@ target_link_libraries(netpbm m)
 # Include the OpenMP library
 find_package(OpenMP)
 if (OpenMP_C_FOUND)
-  target_link_libraries(netpbm OpenMP::OpenMP_C)
+    target_link_libraries(netpbm OpenMP::OpenMP_C)
 endif ()
