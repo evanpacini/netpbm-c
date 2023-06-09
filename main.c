@@ -37,6 +37,14 @@ int main(void) {
 
   PrintSat(sat);
 
+  uint64_t sum = SatQuery(sat, 0, 0, sat->width_ - 1, sat->height_ - 1);
+  printf("Sum: %lu\n", sum);
+
+  uint64_t sum2 = SatQuery(sat, 1, 1, 2, 2);
+  printf("Sum: %lu\n", sum2);
+
+  FreePgm(pgm);
+
   FreeSat(sat);
   return 0;
 }

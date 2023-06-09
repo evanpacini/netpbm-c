@@ -77,6 +77,26 @@ SummedAreaTable *PgmToSat(PgmImage *pgm) {
 }
 
 /**
+ * Query the summed area table.
+ *
+ * @param sat   The summed area table.
+ * @param tlx   Top-left x coordinate.
+ * @param tly   Top-left y coordinate.
+ * @param brx   Bottom-right x coordinate.
+ * @param bry   Bottom-right y coordinate.
+ * @return      The sum of the pixels in the rectangle defined by the given
+ * coordinates.
+ */
+uint64_t SatQuery(SummedAreaTable *sat, uint32_t tlx, uint32_t tly,
+                  uint32_t brx, uint32_t bry) {
+  uint64_t res = sat->data_[bry * sat->width_ + brx];
+  if (tly > 0) res -= sat->data_[(tly - 1) * sat->width_ + brx];
+  if (tlx > 0) res -= sat->data_[bry * sat->width_ + tlx - 1];
+  if (tlx > 0 && tly > 0) res += sat->data_[(tly - 1) * sat->width_ + tlx - 1];
+  return res;
+}
+
+/**
  * Free memory for a summed area table.
  *
  * @param sat  The summed area table to free.
