@@ -164,8 +164,8 @@ PpmImage *PpmPixelConvert(PpmImage *image, void (*conversion_fn)(Pixel *)) {
   memcpy(new_image->data_, image->data_,
          sizeof(Pixel) * new_image->width_ * new_image->height_);
 
-// Convert the pixel data of the new image using the given conversion function
 #pragma omp parallel for default(none) shared(new_image, conversion_fn)
+  // Convert the pixel data of the new image using the given conversion function
   for (int i = 0; i < new_image->width_ * new_image->height_; i++)
     conversion_fn(&new_image->data_[i]);
 
