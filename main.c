@@ -152,7 +152,8 @@ int main(void) {
   FreePgm(pgm_image2);
 
   // Read a PBm image from a file.
-  PbmImage *pbm_image7 = ReadPbm("../output/tud1_srgb_luminance_middle_threshold.pbm");
+  PbmImage *pbm_image7 =
+      ReadPbm("../output/tud1_srgb_luminance_middle_threshold.pbm");
 
   // Write a PBM image to a file.
   WritePbm("../output/tud1_srgb_luminance_middle_threshold_2.pbm", pbm_image7);
