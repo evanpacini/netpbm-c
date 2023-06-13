@@ -1,194 +1,77 @@
-#include "pbm.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+
 #include "pgm.h"
 #include "ppm.h"
+#include "sat.h"
+
+void PrintPgm(PgmImage *pgm) {
+  for (uint32_t y = 0; y < pgm->height_; y++) {
+    for (uint32_t x = 0; x < pgm->width_; x++) {
+      printf("%d\t", pgm->data_[y * pgm->width_ + x]);
+    }
+    printf("\n");
+  }
+}
+
+void PrintSat(SummedAreaTable *sat) {
+  for (uint32_t y = 0; y < sat->height_; y++) {
+    for (uint32_t x = 0; x < sat->width_; x++) {
+      printf("%lu\t", sat->data_[y * sat->width_ + x]);
+    }
+    printf("\n");
+  }
+}
 
 int main(void) {
-  // Read PPM image
-  PpmImage *read_ppm = ReadPpm("../input/tud2.ppm");
-  WritePpm("../output/normal.ppm", read_ppm);
+  // SETUP
+  int8_t radius = 1;
+  PpmImage *ppm = ReadPpm("../input/tud1.ppm");
+  if (!ppm) {
+    return 1;
+  }
+  PgmImage *pgm = PpmToPgm(ppm, SRgbLuminance);
 
-  PpmImage *srgb = PpmPixelConvert(read_ppm, SRgb);
-  WritePpm("../output/srgb.ppm", srgb);
+  // TIME OLD BLUR
+  clock_t old_blur_start = clock();
+  PgmImage *pgm_blur     = KasperBlur(pgm, radius);
+  clock_t old_blur_end   = clock();
+  double old_blur_time =
+      (double)(old_blur_end - old_blur_start) / CLOCKS_PER_SEC;
 
-  PgmImage *ppm_to_pgm = PpmToPgm(read_ppm, SRgbLuminance);
-  WritePgm("../output/grayscale.pgm", ppm_to_pgm);
+  // WAIT FOR THINGS TO SETTLE
+  sleep(1);
 
-  // Blur the greyscale image
-  PgmImage *pgm_blur = KasperBlur(ppm_to_pgm, 5);
-  WritePgm("../output/grayscale_blur.pgm", pgm_blur);
+  // TIME NEW BLUR AND SAT SEPARATELY
+  clock_t sat_start      = clock();
+  SummedAreaTable *sat   = PgmToSat(pgm);
+  clock_t sat_end        = clock();
+  PgmImage *pgm_box_blur = BoxBlur(sat, radius);
+  clock_t sat_blur_end   = clock();
+  double sat_time        = (double)(sat_end - sat_start) / CLOCKS_PER_SEC;
+  double box_blur_time   = (double)(sat_blur_end - sat_end) / CLOCKS_PER_SEC;
+  double sat_blur_time   = (double)(sat_blur_end - sat_start) / CLOCKS_PER_SEC;
 
-  // No dithering
-  PbmImage *pgm_to_pbm = PgmToPbm(ppm_to_pgm, MiddleThreshold);
-  WritePbm("../output/binary.pbm", pgm_to_pbm);
-  FreePbm(pgm_to_pbm);
+  // WRITE
+  WritePgm("../output/tud1.pgm", pgm);
+  WritePgm("../output/tud1_blur.pgm", pgm_blur);
+  WritePgm("../output/tud1_box_blur.pgm", pgm_box_blur);
 
-  // Random dithering
-  PbmImage *pgm_to_pbm_random = PgmToPbm(ppm_to_pgm, RandomThreshold);
-  WritePbm("../output/binary_random.pbm", pgm_to_pbm_random);
-
-  // Convert random to PGM
-  PgmImage *pbm_to_pgm_random = PbmToPgm(pgm_to_pbm_random);
-  FreePbm(pgm_to_pbm_random);
-  WritePgm("../output/random.pgm", pbm_to_pgm_random);
-
-  // Apply blur
-  PgmImage *pbm_to_pgm_random_blur = KasperBlur(pbm_to_pgm_random, 5);
-  WritePgm("../output/random_blur.pgm", pbm_to_pgm_random_blur);
-
-  FreePgm(pbm_to_pgm_random);
-
-  // compare using difference
-  PgmImage *pbm_to_pgm_random_blur_diff =
-      PgmDiff(pbm_to_pgm_random_blur, pgm_blur);
-  WritePgm("../output/random_blur_diff.pgm", pbm_to_pgm_random_blur_diff);
-
-  // show sum of difference
-  double pbm_to_pgm_random_blur_diff_sum =
-      PgmSum(pbm_to_pgm_random_blur_diff, 1);
-  printf("Sum of difference: %f\n", pbm_to_pgm_random_blur_diff_sum);
-  printf(
-      "Average difference: %f\n",
-      pbm_to_pgm_random_blur_diff_sum / (pbm_to_pgm_random_blur_diff->width_ *
-                                         pbm_to_pgm_random_blur_diff->height_));
-  printf("Variance: %f\n", PgmVariance(pbm_to_pgm_random_blur_diff));
-  printf("Standard deviation: %f\n",
-         pow(PgmVariance(pbm_to_pgm_random_blur_diff), .5));
-
-  FreePgm(pbm_to_pgm_random_blur_diff);
-
-  FreePgm(pbm_to_pgm_random_blur);
-
+  // FREE
+  FreePpm(ppm);
+  FreePgm(pgm);
   FreePgm(pgm_blur);
+  FreePgm(pgm_box_blur);
 
-  // Floyd-Steinberg dithering
-  PbmImage *pgm_to_pbm_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm);
-  WritePbm("../output/binary_floyd.pbm", pgm_to_pbm_floyd);
-  FreePbm(pgm_to_pbm_floyd);
-
-  // Atkinson dithering
-  PbmImage *pgm_to_pbm_atkinson = PgmToPbmAtkinson(ppm_to_pgm);
-  WritePbm("../output/binary_atkinson.pbm", pgm_to_pbm_atkinson);
-  FreePbm(pgm_to_pbm_atkinson);
-
-  // Jarvis-Judice-Ninke dithering
-  PbmImage *pgm_to_pbm_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm);
-  WritePbm("../output/binary_jarvis.pbm", pgm_to_pbm_jarvis);
-
-  // Convert Jarvis-Judice-Ninke to PGM
-  PgmImage *pbm_to_pgm_jarvis = PbmToPgm(pgm_to_pbm_jarvis);
-  WritePgm("../output/jarvis.pgm", pbm_to_pgm_jarvis);
-
-  // Apply blur
-  PgmImage *pbm_to_pgm_jarvis_blur = KasperBlur(pbm_to_pgm_jarvis, 5);
-  WritePgm("../output/jarvis_blur.pgm", pbm_to_pgm_jarvis_blur);
-  FreePgm(pbm_to_pgm_jarvis_blur);
-
-  FreePgm(pbm_to_pgm_jarvis);
-
-  // Bayer dithering
-  PbmImage *pgm_to_pbm_bayer = PgmToPbmBayer(ppm_to_pgm);
-  WritePbm("../output/binary_bayer.pbm", pgm_to_pbm_bayer);
-  FreePbm(pgm_to_pbm_bayer);
-
-  // Kasper blur
-  PgmImage *pgm_to_pgm_kasper_blur = KasperBlur(ppm_to_pgm, 3);
-  WritePgm("../output/grayscale_kasper_blur.pgm", pgm_to_pgm_kasper_blur);
-
-  FreePgm(ppm_to_pgm);
-
-  // Kasper blur then Bayer dithering
-  PbmImage *pgm_to_pbm_kasper_blur_bayer =
-      PgmToPbmBayer(pgm_to_pgm_kasper_blur);
-  WritePbm("../output/binary_kasper_blur_bayer.pbm",
-           pgm_to_pbm_kasper_blur_bayer);
-  FreePbm(pgm_to_pbm_kasper_blur_bayer);
-
-  // Kasper blur then Floyd-Steinberg dithering
-  PbmImage *pgm_to_pbm_kasper_blur_floyd =
-      PgmToPbmFloydSteinberg(pgm_to_pgm_kasper_blur);
-  WritePbm("../output/binary_kasper_blur_floyd.pbm",
-           pgm_to_pbm_kasper_blur_floyd);
-  FreePbm(pgm_to_pbm_kasper_blur_floyd);
-
-  FreePgm(pgm_to_pgm_kasper_blur);
-
-  PpmImage *linear = PpmPixelConvert(read_ppm, LinearRgb);
-  WritePpm("../output/linear.ppm", linear);
-  FreePpm(read_ppm);
-
-  PgmImage *ppm_to_pgm_srgb = PpmToPgm(srgb, SRgbLuminance);
-  WritePgm("../output/grayscale_srgb.pgm", ppm_to_pgm_srgb);
-  FreePpm(srgb);
-
-  // No dithering
-  PbmImage *pgm_to_pbm_srgb = PgmToPbm(ppm_to_pgm_srgb, MiddleThreshold);
-  WritePbm("../output/binary_srgb.pbm", pgm_to_pbm_srgb);
-  FreePbm(pgm_to_pbm_srgb);
-
-  // Random dithering
-  PbmImage *pgm_to_pbm_srgb_random = PgmToPbm(ppm_to_pgm_srgb, RandomThreshold);
-  WritePbm("../output/binary_srgb_random.pbm", pgm_to_pbm_srgb_random);
-  FreePbm(pgm_to_pbm_srgb_random);
-
-  // Floyd-Steinberg dithering
-  PbmImage *pgm_to_pbm_srgb_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm_srgb);
-  WritePbm("../output/binary_srgb_floyd.pbm", pgm_to_pbm_srgb_floyd);
-  FreePbm(pgm_to_pbm_srgb_floyd);
-
-  // Atkinson dithering
-  PbmImage *pgm_to_pbm_srgb_atkinson = PgmToPbmAtkinson(ppm_to_pgm_srgb);
-  WritePbm("../output/binary_srgb_atkinson.pbm", pgm_to_pbm_srgb_atkinson);
-  FreePbm(pgm_to_pbm_srgb_atkinson);
-
-  // Jarvis-Judice-Ninke dithering
-  PbmImage *pgm_to_pbm_srgb_jarvis = PgmToPbmJarvisJudiceNinke(ppm_to_pgm_srgb);
-  WritePbm("../output/binary_srgb_jarvis.pbm", pgm_to_pbm_srgb_jarvis);
-  FreePbm(pgm_to_pbm_srgb_jarvis);
-
-  // Bayer dithering
-  PbmImage *pgm_to_pbm_srgb_bayer = PgmToPbmBayer(ppm_to_pgm_srgb);
-  WritePbm("../output/binary_srgb_bayer.pbm", pgm_to_pbm_srgb_bayer);
-  FreePbm(pgm_to_pbm_srgb_bayer);
-
-  FreePgm(ppm_to_pgm_srgb);
-
-  PgmImage *ppm_to_pgm_linear = PpmToPgm(linear, LinearLuminance);
-  WritePgm("../output/grayscale_linear.pgm", ppm_to_pgm_linear);
-  FreePpm(linear);
-
-  // No dithering
-  PbmImage *pgm_to_pbm_linear = PgmToPbm(ppm_to_pgm_linear, MiddleThreshold);
-  WritePbm("../output/binary_linear.pbm", pgm_to_pbm_linear);
-  FreePbm(pgm_to_pbm_linear);
-
-  // Random dithering
-  PbmImage *pgm_to_pbm_linear_random =
-      PgmToPbm(ppm_to_pgm_linear, RandomThreshold);
-  WritePbm("../output/binary_linear_random.pbm", pgm_to_pbm_linear_random);
-  FreePbm(pgm_to_pbm_linear_random);
-
-  // Floyd-Steinberg dithering
-  PbmImage *pgm_to_pbm_linear_floyd = PgmToPbmFloydSteinberg(ppm_to_pgm_linear);
-  WritePbm("../output/binary_linear_floyd.pbm", pgm_to_pbm_linear_floyd);
-  FreePbm(pgm_to_pbm_linear_floyd);
-
-  // Atkinson dithering
-  PbmImage *pgm_to_pbm_linear_atkinson = PgmToPbmAtkinson(ppm_to_pgm_linear);
-  WritePbm("../output/binary_linear_atkinson.pbm", pgm_to_pbm_linear_atkinson);
-  FreePbm(pgm_to_pbm_linear_atkinson);
-
-  // Jarvis-Judice-Ninke dithering
-  PbmImage *pgm_to_pbm_linear_jarvis =
-      PgmToPbmJarvisJudiceNinke(ppm_to_pgm_linear);
-  WritePbm("../output/binary_linear_jarvis.pbm", pgm_to_pbm_linear_jarvis);
-  FreePbm(pgm_to_pbm_linear_jarvis);
-
-  // Bayer dithering
-  PbmImage *pgm_to_pbm_linear_bayer = PgmToPbmBayer(ppm_to_pgm_linear);
-  WritePbm("../output/binary_linear_bayer.pbm", pgm_to_pbm_linear_bayer);
-  FreePbm(pgm_to_pbm_linear_bayer);
-
-  FreePgm(ppm_to_pgm_linear);
-
+  // PRINT
+  printf("Height: %d\n", sat->height_);
+  printf("Width: %d\n", sat->width_);
+  printf("Radius: %d\n", radius);
+  printf("Old blur time: %f\n", old_blur_time);
+  printf("Sat time: %f\n", sat_time);
+  printf("Box blur time: %f\n", box_blur_time);
+  printf("Sat blur time: %f\n", sat_blur_time);
   return 0;
 }
