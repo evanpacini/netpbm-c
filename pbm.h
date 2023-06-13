@@ -28,9 +28,9 @@ extern PbmImage *ReadPbm(const char *filename);
  * Normalizes pixel values from 0-255 to double 0-1.
  *
  * @param image Input PgmImage
- * @return Normalized image data
+ * @return      Normalized image data
  */
-extern double *NormalizePbm(const PbmImage *image);
+extern double *NormalizePgm(const PgmImage *image);
 
 /**
  * Threshold function that always returns 128.

@@ -49,7 +49,7 @@ PbmImage *AllocatePbm(uint32_t width, uint32_t height) {
   }
   image->width_  = width;
   image->height_ = height;
-  image->data_   = (uint8_t *)malloc(width * height * sizeof(uint8_t));
+  image->data_   = (uint8_t *)calloc(width * height, sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
@@ -92,7 +92,7 @@ PbmImage *ReadPbm(const char *filename) {
 
   // Allocate memory for buffer
   size_t buffer_size = (size_t)((width * height + 7) / 8);
-  uint8_t *buffer    = (uint8_t *)malloc(buffer_size);
+  uint8_t *buffer    = (uint8_t *)calloc(1, buffer_size);
   if (!buffer) {
     fprintf(stderr, "Error: out of memory\n");
     fclose(fp);
@@ -137,11 +137,11 @@ PbmImage *ReadPbm(const char *filename) {
  * Normalizes pixel values from 0-255 to double 0-1.
  *
  * @param image Input PgmImage
- * @return Normalized image data
+ * @return      Normalized image data
  */
 double *NormalizePgm(const PgmImage *image) {
   double *double_data =
-      (double *)malloc(image->width_ * image->height_ * sizeof(double));
+      (double *)calloc(image->width_ * image->height_, sizeof(double));
 #pragma omp parallel for default(none) shared(image, double_data)
   // Normalize the pixel data from the buffer
   for (uint32_t i = 0; i < image->height_ * image->width_; i++)

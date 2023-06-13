@@ -23,7 +23,7 @@ PpmImage *AllocatePpm(uint32_t width, uint32_t height) {
   image->width_     = width;
   image->height_    = height;
   image->max_color_ = PPM_MAX_COLOR;
-  image->data_      = (Pixel *)malloc(width * height * sizeof(Pixel));
+  image->data_      = (Pixel *)calloc(width * height, sizeof(Pixel));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);

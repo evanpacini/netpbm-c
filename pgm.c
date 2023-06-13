@@ -17,7 +17,7 @@
  */
 PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   // Allocate memory for image data
-  PgmImage *image = (PgmImage *)calloc(1, sizeof(PgmImage));
+  PgmImage *image = (PgmImage *)malloc(sizeof(PgmImage));
   if (!image) {
     fprintf(stderr, "Error: out of memory\n");
     return NULL;
@@ -25,7 +25,7 @@ PgmImage *AllocatePgm(uint32_t width, uint32_t height) {
   image->width_    = width;
   image->height_   = height;
   image->max_gray_ = PGM_MAX_GRAY;
-  image->data_     = (uint8_t *)calloc(1, width * height * sizeof(uint8_t));
+  image->data_     = (uint8_t *)calloc(width * height, sizeof(uint8_t));
   if (!image->data_) {
     fprintf(stderr, "Error: out of memory\n");
     free(image);
