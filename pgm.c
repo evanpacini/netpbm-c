@@ -1,5 +1,5 @@
-#ifndef NETPBM__PGM_H_
-#define NETPBM__PGM_H_
+#ifndef NETPBM__PGM_C_
+#define NETPBM__PGM_C_
 
 #include <math.h>
 #include <stdbool.h>
@@ -294,4 +294,4 @@ void FreePgm(PgmImage *image) {
   free(image);
 }
 
-#endif// NETPBM__PGM_H_
+#endif// NETPBM__PGM_C_

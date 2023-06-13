@@ -1,5 +1,5 @@
-#ifndef NETPBM__PBM_H_
-#define NETPBM__PBM_H_
+#ifndef NETPBM__PBM_C_
+#define NETPBM__PBM_C_
 
 #include <math.h>
 #include <stdbool.h>
@@ -449,4 +449,4 @@ void FreePbm(PbmImage *image) {
   free(image);
 }
 
-#endif// NETPBM__PBM_H_
+#endif// NETPBM__PBM_C_

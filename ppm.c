@@ -1,5 +1,5 @@
-#ifndef NETPBM__PPM_H_
-#define NETPBM__PPM_H_
+#ifndef NETPBM__PPM_C_
+#define NETPBM__PPM_C_
 
 #include <math.h>
 #include <stdbool.h>
@@ -238,4 +238,4 @@ void FreePpm(PpmImage *image) {
   free(image);
 }
 
-#endif// NETPBM__PPM_H_
+#endif// NETPBM__PPM_C_

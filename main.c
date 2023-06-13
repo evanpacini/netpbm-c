@@ -1,6 +1,6 @@
-#include "pbm.h"
-#include "pgm.h"
-#include "ppm.h"
+#include "pbm.c"
+#include "pgm.c"
+#include "ppm.c"
 
 int main(void) {
   // Read PPM image
