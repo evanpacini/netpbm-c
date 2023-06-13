@@ -3,7 +3,7 @@ project(netpbm LANGUAGES C)
 
 set(CMAKE_C_STANDARD 23)
 
-set(SOURCE_FILES main.c ppm.c pgm.c pbm.c)
+set(SOURCE_FILES ppm.c pgm.c pbm.c)
 set(HEADER_FILES bayer.h types/ppm.h types/pgm.h types/pbm.h types/pixel.h)
 set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE C)
 set_source_files_properties(${HEADER_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
@@ -12,7 +12,7 @@ set_source_files_properties(${HEADER_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 add_executable(run main.c)
 
 # Add the library
-add_library(netpbm ${SOURCE_FILES} ${HEADER_FILES})
+add_library(netpbm SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
 # Include the math library
 target_link_libraries(netpbm m)
