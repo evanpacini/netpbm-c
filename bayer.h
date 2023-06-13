@@ -3,12 +3,6 @@
 
 #include <stdint.h>
 
-typedef struct {
-  uint32_t width_;
-  uint32_t height_;
-  uint8_t *data_;
-} BayerImage;
-
 const double kBayer2X2[2][2] = {{0.0 / 4.0, 2.0 / 4.0}, {3.0 / 4.0, 1.0 / 4.0}};
 
 const double kBayer4X4[4][4] = {
