@@ -6,6 +6,7 @@
 
 #include "types/pbm.h"
 #include "types/pgm.h"
+#include "types/threshold_map.h"
 
 /**
  * Allocate memory for a PBM image.
@@ -72,7 +73,7 @@ extern PbmImage *PgmToPbmAtkinson(const PgmImage *image);
  * @return          A pointer to the new PBM image, or NULL if an error
  * occurred.
  */
-extern PbmImage *PgmToPbmBayer(const PgmImage *image);
+extern PbmImage *PgmToPbmOrdered(const PgmImage *image, const ThresholdMap *map);
 
 /**
  * Convert a PGM image to a PBM image using Floyd–Steinberg dithering.

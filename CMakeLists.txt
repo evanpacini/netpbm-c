@@ -3,7 +3,7 @@ project(netpbm LANGUAGES C)
 
 set(CMAKE_C_STANDARD 23)
 
-set(SOURCE_FILES ppm.c pgm.c pbm.c sat.c)
+set(SOURCE_FILES ppm.c pgm.c pbm.c sat.c threshold_maps.c)
 set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE C)
 
 # Add the library as a target
