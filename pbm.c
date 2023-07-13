@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bayer.h"
-
 #if defined __GLIBC__ && defined __linux__
 
 #include <sys/random.h>
@@ -247,26 +245,28 @@ PbmImage *PgmToPbmAtkinson(const PgmImage *image) {
 }
 
 /**
- * Convert a PGM image to a PBM image using Bayer (Ordered) Dithering.
+ * Convert a PGM image to a PBM image using Ordered Dithering.
  *
  * @param image     The PGM image to convert.
  * @return          A pointer to the new PBM image, or NULL if an error
  * occurred.
  */
-PbmImage *PgmToPbmBayer(const PgmImage *image) {
+PbmImage *PgmToPbmOrdered(const PgmImage *image, const ThresholdMap *map) {
   // Allocate memory for new image data
   PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
   // Normalize pixel data to [0, 1] double values
   double *double_data = NormalizePgm(image);
 
-#pragma omp parallel for default(none) \
-    shared(kBayer8X8, pbm_image, double_data) collapse(2)
+#pragma omp parallel for default(none) shared(map, pbm_image, double_data) \
+    collapse(2)
   // Convert using Bayer (Ordered) Dithering
   for (uint32_t y = 0; y < pbm_image->height_; y++) {
     for (uint32_t x = 0; x < pbm_image->width_; x++) {
-      uint32_t pos          = y * pbm_image->width_ + x;
-      pbm_image->data_[pos] = double_data[pos] < kBayer8X8[x & 7][y & 7];
+      uint32_t pos = y * pbm_image->width_ + x;
+      pbm_image->data_[pos] =
+          double_data[pos] <
+          map->data_[(y % map->height_) * map->width_ + (x % map->width_)];
     }
   }
 
