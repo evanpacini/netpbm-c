@@ -92,7 +92,7 @@ ThresholdMap *PgmToThresholdMap(PgmImage *pgm) {
   if (!map) {
     return NULL;
   }
-  // Convert the PGM values to doubles in the range [0, 1].
+// Convert the PGM values to doubles in the range [0, 1].
 #pragma omp parallel for default(none) shared(map, pgm)
   for (uint64_t i = 0; i < pgm->width_ * pgm->height_; i++)
     map->data_[i] = (double)pgm->data_[i] / 255.0;
