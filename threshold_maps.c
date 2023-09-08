@@ -65,20 +65,20 @@ const ThresholdMap kBayer16X16 = {16, 16, (double *)kBayer16X16Data};
  * @return          A pointer to the ThresholdMap, or NULL if an error occurred.
  */
 ThresholdMap *AllocateThresholdMap(uint32_t width, uint32_t height) {
-    ThresholdMap *map = (ThresholdMap *)malloc(sizeof(ThresholdMap));
-    if (!map) {
-        fprintf(stderr, "Error: out of memory\n");
-        return NULL;
-    }
-    map->width_  = width;
-    map->height_ = height;
-    map->data_   = (double *)calloc(width * height, sizeof(double));
-    if (!map->data_) {
-        fprintf(stderr, "Error: out of memory\n");
-        free(map);
-        return NULL;
-    }
-    return map;
+  ThresholdMap *map = (ThresholdMap *)malloc(sizeof(ThresholdMap));
+  if (!map) {
+    fprintf(stderr, "Error: out of memory\n");
+    return NULL;
+  }
+  map->width_  = width;
+  map->height_ = height;
+  map->data_   = (double *)calloc(width * height, sizeof(double));
+  if (!map->data_) {
+    fprintf(stderr, "Error: out of memory\n");
+    free(map);
+    return NULL;
+  }
+  return map;
 }
 
 /**
@@ -88,15 +88,15 @@ ThresholdMap *AllocateThresholdMap(uint32_t width, uint32_t height) {
  * @return      A pointer to the ThresholdMap, or NULL if an error occurred.
  */
 ThresholdMap *PgmToThresholdMap(PgmImage *pgm) {
-    ThresholdMap *map = AllocateThresholdMap(pgm->width_, pgm->height_);
-    if (!map) {
-        return NULL;
-    }
-    // Convert the PGM values to doubles in the range [0, 1].
-    #pragma omp parallel for default(none) shared(map, pgm)
-    for (uint64_t i = 0; i < pgm->width_ * pgm->height_; i++)
-        map->data_[i] = (double)pgm->data_[i] / 255.0;
-    return map;
+  ThresholdMap *map = AllocateThresholdMap(pgm->width_, pgm->height_);
+  if (!map) {
+    return NULL;
+  }
+// Convert the PGM values to doubles in the range [0, 1].
+#pragma omp parallel for default(none) shared(map, pgm)
+  for (uint64_t i = 0; i < pgm->width_ * pgm->height_; i++)
+    map->data_[i] = (double)pgm->data_[i] / 255.0;
+  return map;
 }
 
 /**
@@ -105,6 +105,6 @@ ThresholdMap *PgmToThresholdMap(PgmImage *pgm) {
  * @param map   The map to free.
  */
 void FreeThresholdMap(ThresholdMap *map) {
-    free(map->data_);
-    free(map);
+  free(map->data_);
+  free(map);
 }
