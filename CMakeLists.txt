@@ -14,9 +14,9 @@ target_link_libraries(netpbm m)
 
 # Include the OpenMP library
 find_package(OpenMP)
-if (OpenMP_C_FOUND)
+if(OpenMP_C_FOUND)
   target_link_libraries(netpbm OpenMP::OpenMP_C)
-endif ()
+endif()
 
 # Add the executable as a target
 add_executable(netpbm-bin main.c)
