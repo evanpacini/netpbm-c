@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #include "sat.h"
-#include "types/pgm.h"
 
 /**
  * Allocate memory for a PGM image.
