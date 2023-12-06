@@ -24,7 +24,7 @@ ContinuationIndentWidth: 4
 IncludeBlocks: Regroup
 IndentCaseLabels: true
 IndentPPDirectives: None
-IndentWidth: 2
+IndentWidth: 4
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None

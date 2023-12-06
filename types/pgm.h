@@ -8,12 +8,15 @@
 
 #include "pixel.h"
 
-// PGM image format
+/**
+ * A PGM image.
+ * This is a grayscale image.
+ */
 typedef struct {
-  uint32_t width_;
-  uint32_t height_;
-  uint16_t max_gray_;
-  uint8_t *data_;
+    uint32_t width_;   // The width of the image.
+    uint32_t height_;  // The height of the image.
+    uint16_t max_gray_;// The maximum gray value.
+    uint8_t *data_;    // The image data, stored in row-major order.
 } PgmImage;
 
 // Luminance function

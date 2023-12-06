@@ -6,7 +6,6 @@
 
 #include "types/pbm.h"
 #include "types/pgm.h"
-#include "types/threshold_map.h"
 
 /**
  * Allocate memory for a PBM image.
@@ -36,16 +35,31 @@ extern double *NormalizePgm(const PgmImage *image);
 /**
  * Threshold function that always returns 128.
  *
+ * @param x Unused
+ * @param y Unused
  * @return 128
  */
-extern uint8_t MiddleThreshold();
+extern uint8_t MiddleThreshold(__attribute__((unused)) uint32_t x,
+                               __attribute__((unused)) uint32_t y);
 
 /**
  * Threshold function that returns a random value between 0 and 255.
  *
+ * @param x Unused
+ * @param y Unused
  * @return Random value between 0 and 255
  */
-extern uint8_t RandomThreshold();
+extern uint8_t RandomThreshold(__attribute__((unused)) uint32_t x,
+                               __attribute__((unused)) uint32_t y);
+
+/**
+ * Threshold function based on IGN (Interleaved Gradient Noise)
+ *
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @return  Threshold value between 0 and 255
+ */
+extern uint8_t IgnThreshold(uint32_t x, uint32_t y);
 
 /**
  * Convert a PGM image to a PBM image.
@@ -73,8 +87,7 @@ extern PbmImage *PgmToPbmAtkinson(const PgmImage *image);
  * @return          A pointer to the new PBM image, or NULL if an error
  * occurred.
  */
-extern PbmImage *PgmToPbmOrdered(const PgmImage *image,
-                                 const ThresholdMap *map);
+extern PbmImage *PgmToPbmOrdered(const PgmImage *image, const PgmImage *map);
 
 /**
  * Convert a PGM image to a PBM image using Floyd–Steinberg dithering.
@@ -101,7 +114,7 @@ extern PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image);
  * @param image     The image data to write.
  * @return          True if successful, false otherwise.
  */
-extern bool WritePbm(const char *filename, const PbmImage *image);
+extern bool WritePbm(const PbmImage *image, const char *filename);
 
 /**
  * Free memory used by a PBM image

@@ -98,7 +98,7 @@ extern double PgmVariance(const PgmImage *image);
  * @param image     Image to write
  * @return          True if successful, false otherwise
  */
-extern bool WritePgm(const char *filename, const PgmImage *image);
+extern bool WritePgm(const PgmImage *image, const char *filename);
 
 /**
  * Free memory used by a PGM image.

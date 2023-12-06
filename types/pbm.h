@@ -3,15 +3,18 @@
 
 #include <stdint.h>
 
-// PBM image format
-// We use one byte per bit, so we can easily access individual pixels
+/**
+ * A PBM image.
+ * This is a black and white image.
+ * We use a byte to represent a pixel of one bit, for ease of use.
+ */
 typedef struct {
-  uint32_t width_;
-  uint32_t height_;
-  uint8_t *data_;
+    uint32_t width_; // The width of the image.
+    uint32_t height_;// The height of the image.
+    uint8_t *data_;  // The image data, stored in row-major order.
 } PbmImage;
 
 // Threshold function
-typedef uint8_t (*ThresholdFn)();
+typedef uint8_t (*ThresholdFn)(uint32_t x, uint32_t y);
 
 #endif// NETPBM_TYPES_PBM_H_

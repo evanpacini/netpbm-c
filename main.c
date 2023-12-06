@@ -2,26 +2,31 @@
 #include "pgm.h"
 #include "ppm.h"
 #include "sat.h"
-#include "threshold_maps.h"
 
 int main(void) {
-  // Read image and convert to grayscale
-  PpmImage *image     = ReadPpm("../input/tud1.ppm");
-  PgmImage *pgm_image = PpmToPgm(image, SRgbLuminance);
-  FreePpm(image);
+    // Read the input image.
+    PpmImage *image = ReadPpm("../input/lenna.ppm");
 
-  // Get blue noise map
-  PgmImage *blue_noise = ReadPgm("../textures/blue_noise/1024x1024/0.pgm");
-  ThresholdMap *map    = PgmToThresholdMap(blue_noise);
-  FreePgm(blue_noise);
+    // Convert the image to grayscale.
+    PgmImage *grayscale = PpmToPgm(image, SRgbLuminance);
 
-  // Convert to PBM
-  PbmImage *pbm = PgmToPbmOrdered(pgm_image, map);
-  FreePgm(pgm_image);
+    // Read a threshold map.
+    PgmImage *map = ReadPgm("../textures/bayer/2x2.pgm");
 
-  // Write image and free memory
-  WritePbm("../output/test.pbm", pbm);
-  FreePbm(pbm);
-  FreeThresholdMap(map);
-  return 0;
+    // Dither the image to 1-bit images.
+    PbmImage *ditheredBayer = PgmToPbmOrdered(grayscale, map);
+    PbmImage *ditheredIgn   = PgmToPbm(grayscale, IgnThreshold);
+
+    // Write the dithered images to a file.
+    WritePbm(ditheredBayer, "../output/lenna_bayer_2x2.pbm");
+    WritePbm(ditheredIgn, "../output/lenna_ign.pbm");
+
+    // Free the memory used by the images.
+    FreePbm(ditheredIgn);
+    FreePbm(ditheredBayer);
+    FreePgm(map);
+    FreePgm(grayscale);
+    FreePpm(image);
+
+    return 0;
 }

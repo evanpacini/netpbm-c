@@ -87,7 +87,7 @@ extern double SRgbLuminance(const Pixel *p);
  * @param image     The image data.
  * @return          true if the image was written successfully, false otherwise.
  */
-extern bool WritePpm(const char *filename, const PpmImage *image);
+extern bool WritePpm(const PpmImage *image, const char *filename);
 
 /**
  * Free the memory used by an image.
