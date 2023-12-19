@@ -25,7 +25,7 @@ extern PbmImage *AllocatePbm(uint32_t width, uint32_t height);
 extern PbmImage *ReadPbm(const char *filename);
 
 /**
- * Normalizes pixel values from 0-255 to double 0-1.
+ * Normalizes pixel values from 0-max_gray to double 0-1.
  *
  * @param image Input PgmImage
  * @return      Normalized image data

@@ -13,6 +13,7 @@
 typedef struct {
     uint32_t width_; // The width of the table
     uint32_t height_;// The height of the table
+    uint16_t max_;   // The maximum value of an original pixel
     uint64_t *data_; // The data of the table, stored in row-major order
 } SummedAreaTable;
 

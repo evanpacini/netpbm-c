@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "pgm.h"
+
 #if defined __GLIBC__ && defined __linux__
 
 #include <sys/random.h>
@@ -22,9 +24,7 @@ ssize_t MyRandom(void *buf, size_t len) {
     unsigned char *buffer = (unsigned char *)buf;
     size_t i;
 
-    for (i = 0; i < len; ++i) {
-        buffer[i] = (unsigned char)rand();
-    }
+    for (i = 0; i < len; ++i) buffer[i] = (unsigned char)rand();
 
     return (ssize_t)len;
 }
@@ -133,7 +133,7 @@ PbmImage *ReadPbm(const char *filename) {
 }
 
 /**
- * Normalizes pixel values from 0-255 to double 0-1.
+ * Normalizes pixel values from 0-max_gray to double 0-1.
  *
  * @param image Input PgmImage
  * @return      Normalized image data
@@ -144,7 +144,7 @@ double *NormalizePgm(const PgmImage *image) {
 #pragma omp parallel for default(none) shared(image, double_data)
     // Normalize the pixel data from the buffer
     for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-        double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
+        double_data[i] = (double)GetPixelPgm(image, i) / image->max_gray_;
     return double_data;
 }
 
@@ -207,7 +207,7 @@ PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
     for (uint32_t y = 0; y < pbm_image->height_; y++) {
         for (uint32_t x = 0; x < pbm_image->width_; x++) {
             uint32_t pos          = y * pbm_image->width_ + x;
-            pbm_image->data_[pos] = image->data_[pos] < threshold(x, y);
+            pbm_image->data_[pos] = GetPixelPgm(image, pos) < threshold(x, y);
         }
     }
     return pbm_image;
@@ -291,9 +291,9 @@ PbmImage *PgmToPbmOrdered(const PgmImage *image, const PgmImage *map) {
         for (uint32_t x = 0; x < pbm_image->width_; x++) {
             uint32_t pos = y * pbm_image->width_ + x;
             pbm_image->data_[pos] =
-                image->data_[pos] <
-                map->data_[(y % map->height_) * map->width_ +
-                           (x % map->width_)];
+                GetPixelPgm(image, pos) <
+                GetPixelPgm(map, (y % map->height_) * map->width_ +
+                                       (x % map->width_));
         }
     }
 

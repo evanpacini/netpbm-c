@@ -11,10 +11,12 @@
  *
  * @param width     The width of the image.
  * @param height    The height of the image.
+ * @param max       The maximum value of an original pixel.
  * @return          A pointer to the SummedAreaTable, or NULL if an error
  * occurred.
  */
-extern SummedAreaTable *AllocateSat(uint32_t width, uint32_t height);
+extern SummedAreaTable *AllocateSat(uint32_t width, uint32_t height,
+                                    uint16_t max);
 
 /**
  * Compute the summed area table of a PGM image.

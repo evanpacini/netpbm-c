@@ -4,29 +4,21 @@
 #include "sat.h"
 
 int main(void) {
-    // Read the input image.
-    PpmImage *image = ReadPpm("../input/lenna.ppm");
+    // Read a pbm image
+    PbmImage *pbm = ReadPbm("../output/lena_ign.pbm");
 
-    // Convert the image to grayscale.
-    PgmImage *grayscale = PpmToPgm(image, SRgbLuminance);
+    // Convert to pgm
+    PgmImage *pgm = PbmToPgm(pbm);
 
-    // Read a threshold map.
-    PgmImage *map = ReadPgm("../textures/bayer/2x2.pgm");
+    // Do something illegal
+    SetPixelPgm(pgm, 0, 0);
 
-    // Dither the image to 1-bit images.
-    PbmImage *ditheredBayer = PgmToPbmOrdered(grayscale, map);
-    PbmImage *ditheredIgn   = PgmToPbm(grayscale, IgnThreshold);
+    // Write the pgm image
+    WritePgm(pgm, "../output/lena_ign.pgm");
 
-    // Write the dithered images to a file.
-    WritePbm(ditheredBayer, "../output/lenna_bayer_2x2.pbm");
-    WritePbm(ditheredIgn, "../output/lenna_ign.pbm");
-
-    // Free the memory used by the images.
-    FreePbm(ditheredIgn);
-    FreePbm(ditheredBayer);
-    FreePgm(map);
-    FreePgm(grayscale);
-    FreePpm(image);
+    // Free the image
+    FreePgm(pgm);
+    FreePbm(pbm);
 
     return 0;
 }
