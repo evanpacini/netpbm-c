@@ -83,7 +83,7 @@ PgmImage *ReadPgm(const char *filename) {
 
     // Read pixel data
     if (fread(image->data_, 1 + (max_gray > 255), width * height, fp) !=
-        width * height * (1 + (max_gray > 255))) {
+            width * height * (1 + (max_gray > 255))) {
         fprintf(stderr, "Error: could not read pixel data from file '%s'\n",
                 filename);
         free(image->data_);
@@ -114,7 +114,7 @@ PgmImage *ReadPgm(const char *filename) {
  */
 inline uint16_t GetPixelPgm(const PgmImage *image, uint32_t i) {
     return (image->max_gray_ > 255) ? ((uint16_t *)image->data_)[i]
-                                    : ((uint8_t *)image->data_)[i];
+           : ((uint8_t *)image->data_)[i];
 }
 
 /**
@@ -153,7 +153,7 @@ PgmImage *PpmToPgm(const PpmImage *image, LuminanceFn luminance) {
         return NULL;
     }
 
-#pragma omp parallel for default(none) shared(pgm_image, image, luminance)
+    #pragma omp parallel for default(none) shared(pgm_image, image, luminance)
     // Convert pixel data from PPM image to PGM image
     for (uint32_t i = 0; i < pgm_image->height_ * pgm_image->width_; i++) {
         // Get pixel from PPM image
@@ -182,7 +182,7 @@ PgmImage *PbmToPgm(const PbmImage *image) {
         return NULL;
     }
 
-#pragma omp parallel for default(none) shared(pgm, image)
+    #pragma omp parallel for default(none) shared(pgm, image)
     // Convert pixel data from PBM image to PGM image
     for (uint32_t i = 0; i < image->height_ * image->width_; i++)
         // Set pixel value in PGM image
@@ -204,7 +204,7 @@ PgmImage *KasperBlur(const PgmImage *image, int8_t radius) {
     PgmImage *new_image =
         AllocatePgm(image->width_, image->height_, image->max_gray_);
 
-#pragma omp parallel for default(none) shared(image, new_image, radius) \
+    #pragma omp parallel for default(none) shared(image, new_image, radius) \
     collapse(2)
     // Blur pixel data
     for (uint32_t y = 0; y < image->height_; y++) {
@@ -214,7 +214,7 @@ PgmImage *KasperBlur(const PgmImage *image, int8_t radius) {
             for (int64_t ry = -radius; ry <= radius; ry++) {
                 for (int64_t rx = -radius; rx <= radius; rx++) {
                     if (y + ry >= 0 && y + ry < image->height_ && x + rx >= 0 &&
-                        x + rx < image->width_) {
+                            x + rx < image->width_) {
                         sum += GetPixelPgm(image,
                                            (y + ry) * image->width_ + (x + rx));
                         count++;
@@ -245,7 +245,7 @@ PgmImage *BoxBlur(const SummedAreaTable *sat, int8_t radius) {
     // Allocate memory for new image data
     PgmImage *new_image = AllocatePgm(width, height, sat->max_);
 
-#pragma omp parallel for default(none) \
+    #pragma omp parallel for default(none) \
     shared(new_image, sat, width, height, radius)
     // Blur pixel data
     for (int64_t y = 0; y < height; y++) {
@@ -277,7 +277,7 @@ PgmImage *PgmDiff(const PgmImage *image1, const PgmImage *image2) {
     PgmImage *new_image =
         AllocatePgm(image1->width_, image1->height_, image1->max_gray_);
 
-#pragma omp parallel for default(none) shared(image1, image2, new_image)
+    #pragma omp parallel for default(none) shared(image1, image2, new_image)
     // Calculate difference
     for (uint32_t i = 0; i < image1->height_ * image1->width_; i++)
         SetPixelPgm(new_image, i,
@@ -296,7 +296,7 @@ PgmImage *PgmDiff(const PgmImage *image1, const PgmImage *image2) {
 double PgmSum(const PgmImage *image, double p) {
     double sum = 0;
 
-#pragma omp parallel for default(none) shared(image, p) reduction(+ : sum)
+    #pragma omp parallel for default(none) shared(image, p) reduction(+ : sum)
     // Sum pixels
     for (uint32_t i = 0; i < image->height_ * image->width_; i++)
         sum += pow((double)GetPixelPgm(image, i), p);
@@ -317,7 +317,7 @@ double PgmVariance(const PgmImage *image) {
     // Calculate variance
     double variance = 0;
 
-#pragma omp parallel for default(none) shared(image, mean) \
+    #pragma omp parallel for default(none) shared(image, mean) \
     reduction(+ : variance)
     // Sum differences from mean squared
     for (uint32_t i = 0; i < image->height_ * image->width_; i++)
