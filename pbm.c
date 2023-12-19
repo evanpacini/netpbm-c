@@ -292,8 +292,8 @@ PbmImage *PgmToPbmOrdered(const PgmImage *image, const PgmImage *map) {
             uint32_t pos = y * pbm_image->width_ + x;
             pbm_image->data_[pos] =
                 GetPixelPgm(image, pos) <
-                GetPixelPgm(map, (y % map->height_) * map->width_ +
-                                       (x % map->width_));
+                GetPixelPgm(
+                    map, (y % map->height_) * map->width_ + (x % map->width_));
         }
     }
 

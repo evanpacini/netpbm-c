@@ -16,7 +16,7 @@ typedef struct {
     uint32_t width_;   // The width of the image.
     uint32_t height_;  // The height of the image.
     uint16_t max_gray_;// The maximum gray value.
-    void *data_;    // The image data, stored in row-major order.
+    void *data_;       // The image data, stored in row-major order.
 } PgmImage;
 
 // Luminance function
