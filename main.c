@@ -153,7 +153,8 @@ void doAllTheThings(char *input, char *output) {
     FreePbm(pbm_bayer_16x16);
 
     // Convert to pbm (blue noise 16x16)
-    PgmImage *pgm_blue_noise_16x16 = ReadPgm("../textures/blue_noise/16x16/0.pgm");
+    PgmImage *pgm_blue_noise_16x16 =
+        ReadPgm("../textures/blue_noise/16x16/0.pgm");
     PbmImage *pbm_blue_noise_16x16 = PgmToPbmOrdered(pgm, pgm_blue_noise_16x16);
 
     // Write the pbm image
@@ -167,7 +168,8 @@ void doAllTheThings(char *input, char *output) {
     FreePbm(pbm_blue_noise_16x16);
 
     // Convert to pbm (blue noise 32x32)
-    PgmImage *pgm_blue_noise_32x32 = ReadPgm("../textures/blue_noise/32x32/0.pgm");
+    PgmImage *pgm_blue_noise_32x32 =
+        ReadPgm("../textures/blue_noise/32x32/0.pgm");
     PbmImage *pbm_blue_noise_32x32 = PgmToPbmOrdered(pgm, pgm_blue_noise_32x32);
 
     // Write the pbm image
@@ -181,7 +183,8 @@ void doAllTheThings(char *input, char *output) {
     FreePbm(pbm_blue_noise_32x32);
 
     // Convert to pbm (blue noise 64x64)
-    PgmImage *pgm_blue_noise_64x64 = ReadPgm("../textures/blue_noise/64x64/0.pgm");
+    PgmImage *pgm_blue_noise_64x64 =
+        ReadPgm("../textures/blue_noise/64x64/0.pgm");
     PbmImage *pbm_blue_noise_64x64 = PgmToPbmOrdered(pgm, pgm_blue_noise_64x64);
 
     // Write the pbm image
@@ -195,8 +198,10 @@ void doAllTheThings(char *input, char *output) {
     FreePbm(pbm_blue_noise_64x64);
 
     // Convert to pbm (blue noise 128x128)
-    PgmImage *pgm_blue_noise_128x128 = ReadPgm("../textures/blue_noise/128x128/0.pgm");
-    PbmImage *pbm_blue_noise_128x128 = PgmToPbmOrdered(pgm, pgm_blue_noise_128x128);
+    PgmImage *pgm_blue_noise_128x128 =
+        ReadPgm("../textures/blue_noise/128x128/0.pgm");
+    PbmImage *pbm_blue_noise_128x128 =
+        PgmToPbmOrdered(pgm, pgm_blue_noise_128x128);
 
     // Write the pbm image
     char outputPbmBlueNoise128x128[100];
@@ -207,7 +212,6 @@ void doAllTheThings(char *input, char *output) {
     // Free the image
     FreePgm(pgm_blue_noise_128x128);
     FreePbm(pbm_blue_noise_128x128);
-
 
     // Free remaining images
     FreePgm(pgm);

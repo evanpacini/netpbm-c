@@ -12,9 +12,7 @@
 
 #include <sys/random.h>
 
-ssize_t MyRandom(void *buf, size_t len) {
-    return getrandom(buf, len, 0);
-}
+ssize_t MyRandom(void *buf, size_t len) { return getrandom(buf, len, 0); }
 
 #else /* not linux */
 
@@ -114,7 +112,7 @@ PbmImage *ReadPbm(const char *filename) {
     // Allocate memory for image data
     PbmImage *image = AllocatePbm(width, height);
 
-    #pragma omp parallel for default(none) shared(image, buffer, width, height)
+#pragma omp parallel for default(none) shared(image, buffer, width, height)
     // Decode the pixel data from the buffer
     for (size_t i = 0; i < width * height; i += 8) {
         // Read the next byte from the buffer
@@ -142,7 +140,7 @@ PbmImage *ReadPbm(const char *filename) {
 double *NormalizePgm(const PgmImage *image) {
     double *double_data =
         (double *)calloc(image->width_ * image->height_, sizeof(double));
-    #pragma omp parallel for default(none) shared(image, double_data)
+#pragma omp parallel for default(none) shared(image, double_data)
     // Normalize the pixel data from the buffer
     for (uint32_t i = 0; i < image->height_ * image->width_; i++)
         double_data[i] = (double)GetPixelPgm(image, i) / image->max_gray_;
@@ -189,8 +187,8 @@ uint16_t RandomThreshold(__attribute__((unused)) uint32_t x,
  */
 uint16_t IgnThreshold(uint32_t x, uint32_t y, uint16_t max_gray) {
     return (uint16_t)(fmodf(52.9829189f * fmodf(.06711056f * (float)x +
-                            .00583715f * (float)y,
-                            1.f),
+                                                    .00583715f * (float)y,
+                                                1.f),
                             1.f) *
                       (float)max_gray);
 }
@@ -207,7 +205,7 @@ PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
     // Allocate memory for new image data
     PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
-    #pragma omp parallel for default(none) shared(image, pbm_image, threshold) \
+#pragma omp parallel for default(none) shared(image, pbm_image, threshold) \
     collapse(2)
     // Convert pixel data using the threshold function
     for (uint32_t y = 0; y < pbm_image->height_; y++) {
@@ -300,11 +298,11 @@ PbmImage *PgmToPbmOrdered(const PgmImage *image, const PgmImage *map) {
     uint32_t map_width  = map->width_;
     uint32_t map_height = map->height_;
 
-    #pragma omp parallel for default(none) shared( \
-    pbm_image, double_data, double_map, map_width, map_height) collapse(2)
+#pragma omp parallel for default(none) shared( \
+        pbm_image, double_data, double_map, map_width, map_height) collapse(2)
     // Convert using Bayer (Ordered) Dithering
     for (uint32_t y = 0; y < pbm_image->height_; y++) {
-    for (uint32_t x = 0; x < pbm_image->width_; x++) {
+        for (uint32_t x = 0; x < pbm_image->width_; x++) {
             uint32_t pos = y * pbm_image->width_ + x;
             pbm_image->data_[pos] =
                 double_data[pos] <
@@ -465,7 +463,7 @@ bool WritePbm(const PbmImage *image, const char *filename) {
         return false;
     }
 
-    #pragma omp parallel for default(none) shared(image, buffer)
+#pragma omp parallel for default(none) shared(image, buffer)
     // Encode pixel data
     for (size_t i = 0; i < image->width_ * image->height_; i++) {
         buffer[i / 8] |= (image->data_[i] << (7 - i % 8));
