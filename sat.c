@@ -50,21 +50,21 @@ SummedAreaTable *PgmToSat(const PgmImage *pgm) {
         return NULL;
     }
 
-#pragma omp parallel for default(none) shared(sat, pgm, width)
+    #pragma omp parallel for default(none) shared(sat, pgm, width)
     // Copy first row
     for (uint32_t x = 0; x < width; x++)
         sat->data_[x] = (uint64_t)GetPixelPgm(pgm, x);
 
     // Column-wise sum
     for (uint32_t y = 1; y < height; y++) {
-#pragma omp parallel for default(none) shared(sat, pgm, width, y)
+        #pragma omp parallel for default(none) shared(sat, pgm, width, y)
         for (uint32_t x = 0; x < width; x++) {
             sat->data_[y * width + x] =
                 (uint64_t)GetPixelPgm(pgm, y * width + x) +
                 sat->data_[(y - 1) * width + x];
         }
     }
-#pragma omp parallel for default(none) shared(sat, width, height)
+    #pragma omp parallel for default(none) shared(sat, width, height)
     //  Row-wise sum
     for (uint32_t y = 0; y < height; y++)
         for (uint32_t x = 1; x < width; x++)
