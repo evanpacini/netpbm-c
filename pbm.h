@@ -33,33 +33,38 @@ extern PbmImage *ReadPbm(const char *filename);
 extern double *NormalizePgm(const PgmImage *image);
 
 /**
- * Threshold function that always returns 128.
+ * Threshold function that always returns a 50% threshold.
  *
  * @param x Unused
  * @param y Unused
- * @return 128
+ * @param max_gray The maximum gray value.
+ * @return max_gray / 2
  */
-extern uint8_t MiddleThreshold(__attribute__((unused)) uint32_t x,
-                               __attribute__((unused)) uint32_t y);
+extern uint16_t MiddleThreshold(__attribute__((unused)) uint32_t x,
+                                __attribute__((unused)) uint32_t y,
+                                uint16_t max_gray);
 
 /**
- * Threshold function that returns a random value between 0 and 255.
+ * Threshold function that returns a random value between 0 and max_gray.
  *
  * @param x Unused
  * @param y Unused
- * @return Random value between 0 and 255
+ * @param max_gray The maximum gray value.
+ * @return Random value between 0 and max_gray
  */
-extern uint8_t RandomThreshold(__attribute__((unused)) uint32_t x,
-                               __attribute__((unused)) uint32_t y);
+extern uint16_t RandomThreshold(__attribute__((unused)) uint32_t x,
+                                __attribute__((unused)) uint32_t y,
+                                uint16_t max_gray);
 
 /**
  * Threshold function based on IGN (Interleaved Gradient Noise)
  *
  * @param x X coordinate
  * @param y Y coordinate
- * @return  Threshold value between 0 and 255
+ * @param max_gray The maximum gray value.
+ * @return  Threshold value between 0 and max_gray
  */
-extern uint8_t IgnThreshold(uint32_t x, uint32_t y);
+extern uint16_t IgnThreshold(uint32_t x, uint32_t y, uint16_t max_gray);
 
 /**
  * Convert a PGM image to a PBM image.

@@ -35,7 +35,7 @@ extern PgmImage *ReadPgm(const char *filename);
  * @param i     The index of the pixel to get.
  * @return      The pixel at the given index.
  */
-extern inline uint16_t GetPixelPgm(const PgmImage *image, uint32_t i);
+extern uint16_t GetPixelPgm(const PgmImage *image, uint32_t i);
 
 /**
  * Set the pixel at the given index in a PGM image.
@@ -44,7 +44,7 @@ extern inline uint16_t GetPixelPgm(const PgmImage *image, uint32_t i);
  * @param i     The index of the pixel to set.
  * @param value The value to set the pixel to.
  */
-extern inline void SetPixelPgm(PgmImage *image, uint32_t i, uint16_t value);
+extern void SetPixelPgm(PgmImage *image, uint32_t i, uint16_t value);
 
 /**
  * Convert an image to a new image using the given pixel conversion function.
