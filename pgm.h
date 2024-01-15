@@ -14,9 +14,11 @@
  *
  * @param width     The width of the image.
  * @param height    The height of the image.
+ * @param max_gray  The maximum gray value.
  * @return          A pointer to the PgmImage, or NULL if an error occurred.
  */
-extern PgmImage *AllocatePgm(uint32_t width, uint32_t height);
+extern PgmImage *AllocatePgm(uint32_t width, uint32_t height,
+                             uint16_t max_gray);
 
 /**
  * Read a PGM image from a file.
@@ -25,6 +27,24 @@ extern PgmImage *AllocatePgm(uint32_t width, uint32_t height);
  * @return          A pointer to the image data, or NULL if an error occurred.
  */
 extern PgmImage *ReadPgm(const char *filename);
+
+/**
+ * Get the pixel at the given index in a PGM image.
+ *
+ * @param image Pointer to the image data.
+ * @param i     The index of the pixel to get.
+ * @return      The pixel at the given index.
+ */
+extern uint16_t GetPixelPgm(const PgmImage *image, uint32_t i);
+
+/**
+ * Set the pixel at the given index in a PGM image.
+ *
+ * @param image Pointer to the image data.
+ * @param i     The index of the pixel to set.
+ * @param value The value to set the pixel to.
+ */
+extern void SetPixelPgm(PgmImage *image, uint32_t i, uint16_t value);
 
 /**
  * Convert an image to a new image using the given pixel conversion function.

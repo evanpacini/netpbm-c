@@ -15,6 +15,6 @@ typedef struct {
 } PbmImage;
 
 // Threshold function
-typedef uint8_t (*ThresholdFn)(uint32_t x, uint32_t y);
+typedef uint16_t (*ThresholdFn)(uint32_t x, uint32_t y, uint16_t max);
 
 #endif// NETPBM_TYPES_PBM_H_

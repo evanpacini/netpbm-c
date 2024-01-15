@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "pgm.h"
+
 #if defined __GLIBC__ && defined __linux__
 
 #include <sys/random.h>
@@ -22,9 +24,7 @@ ssize_t MyRandom(void *buf, size_t len) {
     unsigned char *buffer = (unsigned char *)buf;
     size_t i;
 
-    for (i = 0; i < len; ++i) {
-        buffer[i] = (unsigned char)rand();
-    }
+    for (i = 0; i < len; ++i) buffer[i] = (unsigned char)rand();
 
     return (ssize_t)len;
 }
@@ -72,8 +72,7 @@ PbmImage *ReadPbm(const char *filename) {
 
     // Read header (magic number, width, and height)
     char magic[3];
-    uint32_t width;
-    uint32_t height;
+    uint32_t width, height;
     if (fscanf(fp, "%2s%*[ \t\r\n]%u%*[ \t\r\n]%u%*1[ \t\r\n]", magic, &width,
                &height) != 3) {
         fprintf(stderr, "Error: invalid header in file '%s'\n", filename);
@@ -133,7 +132,7 @@ PbmImage *ReadPbm(const char *filename) {
 }
 
 /**
- * Normalizes pixel values from 0-255 to double 0-1.
+ * Normalizes pixel values from 0-max_gray to double 0-1.
  *
  * @param image Input PgmImage
  * @return      Normalized image data
@@ -144,34 +143,38 @@ double *NormalizePgm(const PgmImage *image) {
 #pragma omp parallel for default(none) shared(image, double_data)
     // Normalize the pixel data from the buffer
     for (uint32_t i = 0; i < image->height_ * image->width_; i++)
-        double_data[i] = (double)image->data_[i] / PGM_MAX_GRAY_F;
+        double_data[i] = (double)GetPixelPgm(image, i) / image->max_gray_;
     return double_data;
 }
 
 /**
- * Threshold function that always returns 128.
+ * Threshold function that always returns a 50% threshold.
  *
  * @param x Unused
  * @param y Unused
- * @return 128
+ * @param max_gray The maximum gray value.
+ * @return max_gray / 2
  */
-uint8_t MiddleThreshold(__attribute__((unused)) uint32_t x,
-                        __attribute__((unused)) uint32_t y) {
-    return 128;
+uint16_t MiddleThreshold(__attribute__((unused)) uint32_t x,
+                         __attribute__((unused)) uint32_t y,
+                         uint16_t max_gray) {
+    return max_gray / 2;
 }
 
 /**
- * Threshold function that returns a random value between 0 and 255.
+ * Threshold function that returns a random value between 0 and max_gray.
  *
  * @param x Unused
  * @param y Unused
- * @return Random value between 0 and 255
+ * @param max_gray The maximum gray value.
+ * @return Random value between 0 and max_gray
  */
-uint8_t RandomThreshold(__attribute__((unused)) uint32_t x,
-                        __attribute__((unused)) uint32_t y) {
-    uint8_t random;
-    MyRandom(&random, sizeof(uint8_t));
-    return random;
+uint16_t RandomThreshold(__attribute__((unused)) uint32_t x,
+                         __attribute__((unused)) uint32_t y,
+                         uint16_t max_gray) {
+    uint16_t random;
+    MyRandom(&random, sizeof(uint16_t));
+    return random % max_gray;
 }
 
 /**
@@ -179,14 +182,15 @@ uint8_t RandomThreshold(__attribute__((unused)) uint32_t x,
  *
  * @param x X coordinate
  * @param y Y coordinate
- * @return  Threshold value between 0 and 255
+ * @param max_gray The maximum gray value.
+ * @return  Threshold value between 0 and max_gray
  */
-uint8_t IgnThreshold(uint32_t x, uint32_t y) {
-    return (uint8_t)(fmodf(52.9829189f * fmodf(.06711056f * (float)x +
-                                                   .00583715f * (float)y,
-                                               1.f),
-                           1.f) *
-                     255.f);
+uint16_t IgnThreshold(uint32_t x, uint32_t y, uint16_t max_gray) {
+    return (uint16_t)(fmodf(52.9829189f * fmodf(.06711056f * (float)x +
+                                                    .00583715f * (float)y,
+                                                1.f),
+                            1.f) *
+                      (float)max_gray);
 }
 
 /**
@@ -206,8 +210,9 @@ PbmImage *PgmToPbm(const PgmImage *image, ThresholdFn threshold) {
     // Convert pixel data using the threshold function
     for (uint32_t y = 0; y < pbm_image->height_; y++) {
         for (uint32_t x = 0; x < pbm_image->width_; x++) {
-            uint32_t pos          = y * pbm_image->width_ + x;
-            pbm_image->data_[pos] = image->data_[pos] < threshold(x, y);
+            uint32_t pos = y * pbm_image->width_ + x;
+            pbm_image->data_[pos] =
+                GetPixelPgm(image, pos) < threshold(x, y, image->max_gray_);
         }
     }
     return pbm_image;
@@ -235,7 +240,7 @@ PbmImage *PgmToPbmAtkinson(const PgmImage *image) {
             double new_pixel = round(old_pixel);
 
             // Invert pixel value (PBM is white 0 and black 1)
-            pbm_image->data_[pos] = new_pixel == 0;
+            pbm_image->data_[pos] = !new_pixel;
 
             // Calculate error
             double error = old_pixel - new_pixel;
@@ -285,17 +290,27 @@ PbmImage *PgmToPbmOrdered(const PgmImage *image, const PgmImage *map) {
     // Allocate memory for new image data
     PbmImage *pbm_image = AllocatePbm(image->width_, image->height_);
 
-#pragma omp parallel for default(none) shared(map, pbm_image, image) collapse(2)
+    // Normalize pixel data to [0, 1] double values
+    double *double_data = NormalizePgm(image);
+    double *double_map  = NormalizePgm(map);
+
+    // Get map width and height
+    uint32_t map_width  = map->width_;
+    uint32_t map_height = map->height_;
+
+#pragma omp parallel for default(none) shared( \
+        pbm_image, double_data, double_map, map_width, map_height) collapse(2)
     // Convert using Bayer (Ordered) Dithering
     for (uint32_t y = 0; y < pbm_image->height_; y++) {
         for (uint32_t x = 0; x < pbm_image->width_; x++) {
             uint32_t pos = y * pbm_image->width_ + x;
             pbm_image->data_[pos] =
-                image->data_[pos] <
-                map->data_[(y % map->height_) * map->width_ +
-                           (x % map->width_)];
+                double_data[pos] <
+                double_map[(y % map_height) * map_width + (x % map_width)];
         }
     }
+    free(double_data);
+    free(double_map);
 
     return pbm_image;
 }
@@ -322,7 +337,7 @@ PbmImage *PgmToPbmFloydSteinberg(const PgmImage *image) {
             double new_pixel = round(old_pixel);
 
             // Invert pixel value (PBM is white 0 and black 1)
-            pbm_image->data_[pos] = new_pixel == 0;
+            pbm_image->data_[pos] = !new_pixel;
 
             // Calculate error
             double error = old_pixel - new_pixel;
@@ -369,7 +384,7 @@ PbmImage *PgmToPbmJarvisJudiceNinke(const PgmImage *image) {
             double new_pixel = round(old_pixel);
 
             // Invert pixel value (PBM is white 0 and black 1)
-            pbm_image->data_[pos] = new_pixel == 0;
+            pbm_image->data_[pos] = !new_pixel;
 
             // Calculate error
             double error = old_pixel - new_pixel;
